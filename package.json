@@ -1,0 +1,12 @@
+{
+  "name": "dex-recover-website",
+  "version": "1.0.0",
+  "description": "DEX RECOVER SOLUTIONS - Professional account recovery website",
+  "scripts": {
+    "start": "npx http-server -p 8080 -c-1",
+    "dev": "npx http-server -p 8080 -c-1 -o"
+  },
+  "keywords": ["dex", "recover", "gaming", "account-recovery"],
+  "author": "",
+  "license": "ISC"
+}

