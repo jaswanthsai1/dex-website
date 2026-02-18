@@ -17,3 +17,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .vercel
+
+# Credentials
+master_token.txt
+guest100067.dat
+guest_generated.dat
+acc_token.json

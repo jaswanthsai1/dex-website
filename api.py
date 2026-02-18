@@ -1,32 +1,68 @@
 import os
 os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+import sys
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 import httpx
 import asyncio
 import time
 import socket
 import binascii
 import warnings
-from fastapi import FastAPI, Query, Request
-from fastapi.responses import HTMLResponse, JSONResponse
-from fastapi.staticfiles import StaticFiles
-from fastapi.middleware.cors import CORSMiddleware
+
+print("[DEBUG] importing modules...")
+
+try:
+    from fastapi import FastAPI, Query, Request
+    from fastapi.responses import HTMLResponse, JSONResponse
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.middleware.cors import CORSMiddleware
+    print("[DEBUG] fastapi imported")
+except ImportError as e:
+    print(f"[FATAL] Failed to import fastapi: {e}")
+    raise e
+
 from urllib.parse import urlparse, parse_qs
 from urllib3.exceptions import InsecureRequestWarning
 import os
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from pydantic import BaseModel
+
+try:
+    from pydantic import BaseModel
+    print("[DEBUG] pydantic imported")
+except ImportError as e:
+    print(f"[FATAL] Failed to import pydantic: {e}")
+    raise e
+
 import json
 import base64
-from Crypto.Cipher import AES
-from Crypto.Util.Padding import pad
-from google.protobuf import json_format, message
-from google.protobuf import descriptor as _descriptor
-from google.protobuf import descriptor_pool as _descriptor_pool
-from google.protobuf import symbol_database as _symbol_database
-from google.protobuf.internal import builder as _builder
-from byte import Encrypt_ID, encrypt_api
+
+try:
+    from Crypto.Cipher import AES
+    from Crypto.Util.Padding import pad
+    print("[DEBUG] Crypto imported")
+except ImportError as e:
+    print(f"[FATAL] Failed to import Crypto: {e}")
+    raise e
+
+try:
+    from google.protobuf import json_format, message
+    from google.protobuf import descriptor as _descriptor
+    from google.protobuf import descriptor_pool as _descriptor_pool
+    from google.protobuf import symbol_database as _symbol_database
+    from google.protobuf.internal import builder as _builder
+    print("[DEBUG] google.protobuf imported")
+except ImportError as e:
+    print(f"[FATAL] Failed to import google.protobuf: {e}")
+    raise e
+
+try:
+    from byte import Encrypt_ID, encrypt_api
+    print("[DEBUG] byte imported")
+except ImportError as e:
+    print(f"[FATAL] Failed to import byte: {e}")
+    raise e
 
 # === Settings ===
 MAIN_KEY = base64.b64decode('WWcmdGMlREV1aDYlWmNeOA==')
