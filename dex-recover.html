@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -7,7 +7,7 @@
     <title>DEX RECOVER SOLUTIONS - Professional Account Recovery</title>
     <meta name="description"
         content="Expert account recovery solutions for gamers. Fast, secure, and reliable service.">
-    <link rel="stylesheet" href="/static/styles-dex.css">
+    <link rel="stylesheet" href="/static/styles-dex.css?v=2">
     <link rel="stylesheet" href="/static/search-styles.css">
     <link rel="stylesheet" href="/static/service-btn-fix.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -161,6 +161,84 @@
                     </form>
                     <div class="tool-results" id="bioResults"></div>
                 </div>
+
+                <!-- FRIEND SPAMMER (Single Bot) -->
+                <div class="tool-card">
+                    <div class="tool-icon">👥</div>
+                    <h3>Friend Spammer</h3>
+                    <p>Send friend requests instantly</p>
+
+                    <!-- Action Select -->
+                    <div class="input-group" style="margin-bottom: 10px;">
+                        <select id="friend-action-select" class="input-style" aria-label="Friend Action">
+                            <option value="add">Add Friend</option>
+                            <option value="remove">Remove Friend</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" id="friend-uid-input" placeholder="Enter Target UID" class="input-style">
+                    </div>
+                    <button class="tool-btn" onclick="sendFriendRequest()">Send Request</button>
+                    <div id="friend-result" class="tool-results" style="display: none; margin-top: 10px;"></div>
+                </div>
+
+                <!-- TEAM/ROOM SPAMMER (Integrated) -->
+                <div class="tool-card">
+                    <div class="tool-icon">🚀</div>
+                    <h3>Team/Room Spammer</h3>
+                    <p>Spam Team Invites, Joins, Room Invites & Joins</p>
+
+                    <!-- Options as Select Dropdown -->
+                    <div class="input-group" style="margin-bottom: 15px;">
+                        <select id="team-action-select" onchange="toggleTeamInput(this.value)" class="input-style"
+                            aria-label="Team Action Select">
+                            <option value="invite">Team Invite</option>
+                            <option value="join">Team Join</option>
+                            <option value="room_invite">Room Invite</option>
+                            <option value="room_join">Room Join</option>
+                        </select>
+                    </div>
+
+                    <!-- Inputs -->
+                    <div id="team-invite-input-group">
+                        <input type="text" id="team-target-uid" placeholder="Enter Player UID to Invite"
+                            class="input-style">
+                    </div>
+                    <div id="team-join-input-group" style="display: none;">
+                        <input type="text" id="team-target-code" placeholder="Enter Team Code to Join"
+                            class="input-style">
+                    </div>
+                    <div id="room-invite-input-group" style="display: none;">
+                        <input type="text" id="room-target-uid" placeholder="Enter Target UID" class="input-style"
+                            style="width: 48%; margin-right: 2%; display: inline-block;">
+                        <input type="text" id="room-target-id-inv" placeholder="Enter Room ID" class="input-style"
+                            style="width: 48%; display: inline-block;">
+                    </div>
+                    <div id="room-join-input-group" style="display: none;">
+                        <input type="text" id="room-target-id" placeholder="Enter Room ID to Join" class="input-style">
+                    </div>
+
+                    <button class="tool-btn" onclick="sendTeamAction()">Execute Action</button>
+                    <div id="team-result" class="tool-results" style="display: none; margin-top: 10px;"></div>
+                </div>
+
+                <!-- TOKEN EXTRACTOR -->
+                <div class="tool-card">
+                    <div class="tool-icon">🔑</div>
+                    <h3>Token Extractor</h3>
+                    <p>Extract access token from Kiosgamer URL</p>
+
+                    <div class="input-group">
+                        <textarea id="kiosgamer-url" placeholder="Paste Kiosgamer URL here..." class="input-style"
+                            style="min-height: 80px; font-family: monospace;"></textarea>
+                    </div>
+
+                    <button class="tool-btn" onclick="extractTokenFromUrl()">Extract Token</button>
+
+                    <div id="extractor-result" class="tool-results" style="display: none; margin-top: 10px;"></div>
+                </div>
+
             </div>
         </div>
     </section>

@@ -8,6 +8,7 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad
 from google.protobuf import json_format, message
 from colorama import Fore, Style, init
+import guest_generator
 
 # Initialize colorama
 init(autoreset=True)
@@ -15,9 +16,26 @@ init(autoreset=True)
 # === Settings ===
 MAIN_KEY = base64.b64decode('WWcmdGMlREV1aDYlWmNeOA==')
 MAIN_IV = base64.b64decode('Nm95WkRyMjJFM3ljaGpNJQ==')
-USERAGENT = "Dalvik/2.1.0 (Linux; U; Android 13; CPH2095 Build/RKQ1.211119.001)"
-RELEASEVERSION = "OB50"
+USERAGENT = "Dalvik/2.1.0 (Linux; U; Android 7.1.2; ASUS_Z01QD Build/QKQ1.190825.002)"
+RELEASEVERSION = "OB52"
 MASTER_TOKEN_FILE = "master_token.txt"
+GUEST_GENERATED_FILE = "guest_generated.dat"
+
+# === MyMessage Protobuf Setup ===
+from google.protobuf import descriptor as _descriptor
+from google.protobuf import descriptor_pool as _descriptor_pool
+from google.protobuf import symbol_database as _symbol_database
+from google.protobuf.internal import builder as _builder
+
+try:
+    _sym_db_my = _symbol_database.Default()
+    DESCRIPTOR_MY = _descriptor_pool.Default().AddSerializedFile(b'\n\x10my_message.proto\">\n\tMyMessage\x12\x0f\n\x07\x66ield21\x18\x15 \x01(\x03\x12\x0f\n\x07\x66ield22\x18\x16 \x01(\x0c\x12\x0f\n\x07\x66ield23\x18\x17 \x01(\x0c\x62\x06proto3')
+    _globals_my = globals()
+    _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR_MY, _globals_my)
+    _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR_MY, 'my_message_pb2', _globals_my)
+    MyMessage = _sym_db_my.GetSymbol('MyMessage')
+except Exception as e:
+    print(f"Warning: Failed to setup MyMessage Protobuf: {e}")
 
 # === Import Protobuf Modules ===
 try:
@@ -72,14 +90,13 @@ async def create_jwt(uid: str, password: str):
             })
             proto_bytes = await json_to_proto(body, FreeFire_pb2.LoginReq())
             payload = aes_cbc_encrypt(MAIN_KEY, MAIN_IV, proto_bytes)
-            url = "https://loginbp.ggblueshark.com/MajorLogin"
+            url = "https://loginbp.common.ggbluefox.com/MajorLogin"
             headers = {
                 'User-Agent': USERAGENT,
-                'Connection': "Keep-Alive",
-                'Accept-Encoding': "gzip",
+                'Connection': "close",
+                'Accept-Encoding': "gzip, deflate, br",
                 'Content-Type': "application/octet-stream",
-                'Expect': "100-continue",
-                'X-Unity-Version': "2022.3.47f1",
+                'X-Unity-Version': "2018.4.11f1",
                 'X-GA': "v1 1",
                 'ReleaseVersion': RELEASEVERSION
             }
@@ -98,18 +115,34 @@ async def create_jwt(uid: str, password: str):
                        raise Exception(f"Server returned status {resp.status_code}")
                     raise Exception("Failed to parse protobuf response")
 
+                # Extract Session metadata
+                raw_content = resp.content
+                session_ts, session_key, session_iv = None, None, None
+                if MyMessage:
+                    try:
+                        my_msg = MyMessage()
+                        my_msg.ParseFromString(raw_content)
+                        session_ts = my_msg.field21
+                        session_key = my_msg.field22.hex() if my_msg.field22 else None
+                        session_iv = my_msg.field23.hex() if my_msg.field23 else None
+                    except: pass
+
                 token = msg.get('token', '0')
                 region = msg.get('lockRegion', '0')
-                server_url = msg.get('serverUrl', 'https://loginbp.ggblueshark.com')
+                server_url = msg.get('serverUrl', 'https://loginbp.common.ggbluefox.com')
                 return {
                     'uid': uid,
                     'token': f"{token}",
                     'region': region,
                     'server_url': server_url,
+                    'session_ts': session_ts,
+                    'session_key': session_key,
+                    'session_iv': session_iv,
+                    'payload_hex': payload.hex() 
                 }
         except Exception as e:
             if attempt < retries - 1:
-                print(f"{Fore.YELLOW}⚠️ Login attempt {attempt+1} failed ({e}). Retrying...{Style.RESET_ALL}")
+                print(f"Login attempt {attempt+1} failed ({e}). Retrying...")
                 await asyncio.sleep(2)
             else:
                 return {'error': str(e), 'uid': uid}
@@ -131,10 +164,10 @@ def save_master_token(token_data):
     try:
         with open(MASTER_TOKEN_FILE, 'w', encoding='utf-8') as f:
             json.dump(token_data, f, indent=4)
-        print(f"\n{Fore.GREEN}✅ Master Token saved successfully to {MASTER_TOKEN_FILE}{Style.RESET_ALL}")
+        print(f"Master Token saved successfully to {MASTER_TOKEN_FILE}")
         return True
     except Exception as e:
-        print(f"\n{Fore.RED}❌ Failed to save token: {e}{Style.RESET_ALL}")
+        print(f"Failed to save token: {e}")
         return False
 
 async def login_with_guest_file():
@@ -175,21 +208,68 @@ async def login_with_guest_file():
 
         print(f"{Fore.CYAN}Found Guest Account: {uid}{Style.RESET_ALL}")
         print(f"{Fore.CYAN}Logging in...{Style.RESET_ALL}")
-        
-        result = await create_jwt(uid, password)
-        
-        if 'error' in result:
-            print(f"\n{Fore.RED}❌ Login Failed: {result['error']}{Style.RESET_ALL}")
-        else:
-            print(f"\n{Fore.GREEN}✅ Login Successful!{Style.RESET_ALL}")
-            print(f"Region: {result['region']}")
-            print(f"Token: {result['token'][:20]}...")
-            
-            save_master_token(result)
-            print(f"\n{Fore.YELLOW}You can now restart your server to use this token for searches.{Style.RESET_ALL}")
+        try:
+            token_data = await create_jwt(uid, password)
+            if 'error' in token_data:
+                print(f"{Fore.RED}Login failed: {token_data['error']}{Style.RESET_ALL}")
+                return None
+                
+            print(f"{Fore.GREEN}Login Successful! Token generated.{Style.RESET_ALL}")
+            if save_master_token(token_data):
+                return token_data
+                
+        except Exception as e:
+            print(f"{Fore.RED}Login process failed: {e}{Style.RESET_ALL}")
+            return None
 
     except Exception as e:
         print(f"{Fore.RED}❌ Error reading guest file: {e}{Style.RESET_ALL}")
+
+async def get_spammer_token(force_new=False):
+    """
+    Returns a token for spamming.
+    Prioritizes a separate 'guest_generated.dat' file to avoid overwriting the main master_token.
+    If force_new is True, generates a brand new guest account.
+    """
+    # 1. Try to load existing generated guest if not forced new
+    if not force_new and os.path.exists(GUEST_GENERATED_FILE):
+        try:
+            with open(GUEST_GENERATED_FILE, 'r') as f:
+                data = json.load(f)
+                uid = data.get("uid")
+                password = data.get("password")
+                if uid and password:
+                    print(f"{Fore.CYAN}[Spammer] Logging in with existing generated guest {uid}...{Style.RESET_ALL}")
+                    token_data = await create_jwt(uid, password)
+                    if token_data and 'error' not in token_data:
+                        return token_data
+                    else:
+                        print(f"{Fore.RED}[Spammer] Existing guest login failed. Generating new one.{Style.RESET_ALL}")
+        except Exception as e:
+            print(f"{Fore.RED}[Spammer] Error loading guest file: {e}{Style.RESET_ALL}")
+
+    # 2. Generate NEW Guest Account
+    print(f"{Fore.YELLOW}[Spammer] Generating FRESH Guest Account...{Style.RESET_ALL}")
+    guest_creds = guest_generator.generate_guest_account()
+    
+    if not guest_creds:
+        print(f"{Fore.RED}[Spammer] Failed to generate guest account.{Style.RESET_ALL}")
+        return None
+
+    # Save new credentials
+    try:
+        with open(GUEST_GENERATED_FILE, 'w') as f:
+            json.dump(guest_creds, f)
+        print(f"{Fore.GREEN}[Spammer] New guest saved to {GUEST_GENERATED_FILE}{Style.RESET_ALL}")
+    except Exception as e:
+        print(f"{Fore.RED}Failed to save generated guest: {e}{Style.RESET_ALL}")
+
+    # 3. Login with new guest
+    uid = guest_creds.get("uid")
+    password = guest_creds.get("password")
+    
+    print(f"{Fore.CYAN}[Spammer] Logging in with NEW guest {uid}...{Style.RESET_ALL}")
+    return await create_jwt(uid, password)
 
 async def main():
     display_banner()

@@ -1055,6 +1055,45 @@ body {
     color: var(--primary-orange);
 }
 
+/* Team Spammer Options */
+.team-options {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    border-radius: 8px;
+    justify-content: center;
+}
+
+.team-options label {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #eee;
+    font-size: 0.95em;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.team-options input[type="radio"] {
+    accent-color: #00d2d3;
+    width: 16px;
+    height: 16px;
+}
+
+.tool-box-inner {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.tool-box-inner:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
 .social-icons {
     display: flex;
     gap: 1rem;
@@ -1168,5 +1207,293 @@ body {
 
     .section-title {
         font-size: 2rem;
+    }
+}
+
+/* ===== CONSOLE STYLES ===== */
+.console-section {
+    padding: 2rem 0;
+    background: #0f0f13;
+    border-top: 1px solid rgba(255, 107, 53, 0.2);
+    margin-top: 2rem;
+}
+
+.console-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.console-header h3 {
+    color: var(--primary-orange);
+    margin: 0;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.2rem;
+}
+
+.clear-console-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: #aaa;
+    padding: 5px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+}
+
+.clear-console-btn:hover {
+    background: rgba(255, 107, 53, 0.2);
+    border-color: var(--primary-orange);
+    color: white;
+}
+
+.console-output {
+    background: #050505;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 1.5rem;
+    height: 500px;
+    overflow-y: auto;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 0.95rem;
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.8);
+    scroll-behavior: smooth;
+}
+
+.console-message {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    color: #ddd;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(5px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.console-message.system-msg {
+    color: #00d9ff;
+    font-weight: bold;
+}
+
+.console-message.success-msg {
+    color: #00ff88;
+}
+
+.console-message.error-msg {
+    color: #ff4d4d;
+}
+
+.console-message.info-msg {
+    color: #e0e0e0;
+}
+
+.console-highlight {
+    color: var(--primary-orange);
+    font-weight: bold;
+}
+
+.timestamp {
+    color: #555;
+    margin-right: 15px;
+    font-size: 0.8rem;
+}
+
+/* Scrollbar for console */
+.console-output::-webkit-scrollbar {
+    width: 8px;
+}
+
+.console-output::-webkit-scrollbar-track {
+    background: #111;
+}
+
+.console-output::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 4px;
+}
+
+.console-output::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* ===== RESULT CARDS UI REFINEMENT ===== */
+.result-card {
+    margin-top: 10px;
+    border: 1px solid rgba(255, 107, 53, 0.2);
+    border-radius: 8px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: var(--transition);
+    font-size: 0.9rem;
+    /* Base font size reduction */
+}
+
+.result-card:hover {
+    border-color: var(--primary-orange);
+    box-shadow: 0 6px 12px rgba(255, 107, 53, 0.15);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+    margin-bottom: 8px;
+}
+
+.result-header strong {
+    color: var(--text-primary);
+    font-size: 1rem;
+    /* Smaller header */
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 65%;
+}
+
+.result-body {
+    font-size: 0.85rem;
+    /* Smaller body text */
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    /* Tighter gap */
+}
+
+.result-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 0;
+}
+
+.result-label {
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+.result-value {
+    color: var(--text-primary);
+    font-weight: 600;
+    text-align: right;
+    word-break: break-all;
+    /* Critical for long tokens/ids */
+    max-width: 60%;
+}
+
+/* Specific Badges */
+.badge {
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    /* Smaller badge */
+    color: white;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+/* JSON Container Refinement */
+.json-container {
+    margin-top: 8px;
+    max-height: 250px;
+    /* Limit height */
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 8px;
+    border-radius: 6px;
+    font-family: 'Consolas', monospace;
+    font-size: 0.75rem;
+    /* Smaller JSON font */
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    line-height: 1.4;
+}
+
+/* Custom Scrollbar for JSON */
+.json-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.json-container::-webkit-scrollbar-thumb {
+    background: var(--primary-orange);
+    border-radius: 3px;
+}
+
+.result-card .footer-note {
+    margin-top: 8px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-top: 5px;
+    font-size: 0.75rem;
+    color: #ffd700;
+    font-style: italic;
+}
+
+/* ===== MISSING INPUT STYLE FIX ===== */
+.input-style {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 107, 53, 0.3);
+    border-radius: 8px;
+    color: white;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.input-style:focus {
+    outline: none;
+    border-color: var(--primary-orange);
+    background: rgba(255, 255, 255, 0.08);
+}
+
+select.input-style {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FF6B35%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    background-size: 0.65em auto;
+    padding-right: 2.5rem;
+}
+
+select.input-style option {
+    background: #1a0a00;
+    /* Dark background for options */
+    color: white;
+}
+
+/* ===== MOBILE OPTIMIZATION ===== */
+@media (max-width: 480px) {
+
+    /* Stack inputs that use inline 48% width */
+    div[id$="-input-group"] input.input-style[style*="width: 48%"],
+    input.input-style[style*="width: 48%"] {
+        width: 100% !important;
+        margin-right: 0 !important;
+        margin-bottom: 10px !important;
+        display: block !important;
+    }
+
+    .result-value {
+        font-size: 0.8rem;
+        /* Prevent overflow on small screens */
     }
 }

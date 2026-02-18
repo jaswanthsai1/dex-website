@@ -1,4 +1,5 @@
-// ===== EAT TOKEN SEARCH =====
+console.log("🔥 DEX SCRIPT RELOADED v2");
+// alert("DEX Script Loaded - Popups should work!"); // Debug alert
 const eatTokenForm = document.getElementById('eatTokenForm');
 const eatTokenInput = document.getElementById('eatTokenInput');
 const loadingIndicator = document.getElementById('loadingIndicator');
@@ -341,8 +342,7 @@ if (jwtForm) {
             return;
         }
 
-        jwtResults.classList.remove('active');
-        jwtResults.innerHTML = '<div class="success-message">⏳ Generating JWT...</div>';
+        jwtResults.innerHTML = '<div class="loading-text">Generating...</div>';
         jwtResults.classList.add('active');
 
         try {
@@ -353,19 +353,18 @@ if (jwtForm) {
                 let msg = data.error || data.details || 'Failed to generate JWT';
                 jwtResults.innerHTML = `<div class="error-message">❌ ${msg}</div>`;
             } else if (data.access_token) {
-                let html = '<div class="success-message">✅ JWT Generated!</div>';
-                html += '<div style="margin-top: 1rem;">';
-                html += '<p style="font-size: 0.85rem; color: #aaa; margin-bottom: 0.5rem;">Copy this token for Bio Update:</p>';
-                html += `<textarea id="access-token-display" readonly style="width: 100%; height: 100px; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,107,53,0.3); color: #fff; border-radius: 5px; padding: 10px; font-family: monospace; font-size: 0.8rem;">${data.access_token}</textarea>`;
-
-                if (data.region) {
-                    html += `<div class="result-item" style="margin-top: 10px;"><span class="result-label">Region:</span><span class="result-value">${data.region}</span></div>`;
-                }
-
+                let html = '<div class="success-message">✅ Generated Successfully!</div>';
+                html += '<div style="margin-top: 5px;">';
+                html += `<div class="result-item"><span class="result-label">Region:</span> <span class="result-value">${data.region || 'Unknown'}</span></div>`;
+                html += '<div style="display:flex; justify-content:space-between; align-items:center; margin: 5px 0;">';
+                html += '<p style="font-size: 0.85rem; color: #aaa; margin: 0;">Token:</p>';
+                html += `<button onclick="navigator.clipboard.writeText(document.getElementById('access-token-display').value).then(() => { this.innerText = 'Copied!'; setTimeout(() => this.innerText = 'Copy', 2000); })" style="background:var(--primary-orange); border:none; color:white; padding:2px 8px; border-radius:3px; cursor:pointer; font-size:0.75rem;">Copy</button>`;
+                html += '</div>';
+                html += `<textarea id="access-token-display" readonly style="width: 100%; height: 80px; background: rgba(0,0,0,0.5); border: 1px solid #444; color: #0f0; border-radius: 4px; font-family: monospace; font-size: 0.8rem;">${data.access_token}</textarea>`;
                 html += '</div>';
                 jwtResults.innerHTML = html;
             } else {
-                jwtResults.innerHTML = `<div class="error-message">❌ No JWT found in response</div>`;
+                jwtResults.innerHTML = '<div class="error-message">❌ No JWT found in response</div>';
             }
         } catch (error) {
             jwtResults.innerHTML = `<div class="error-message">❌ Network Error: ${error.message}</div>`;
@@ -382,8 +381,7 @@ if (uidForm) {
         e.preventDefault();
         const uid = this.querySelector('input[name="uid"]').value.trim();
 
-        uidResults.classList.remove('active');
-        uidResults.innerHTML = '<div class="success-message">⏳ Looking up player...</div>';
+        uidResults.innerHTML = '<div class="loading-text">Searching...</div>';
         uidResults.classList.add('active');
 
         try {
@@ -393,22 +391,188 @@ if (uidForm) {
             if (data.error) {
                 uidResults.innerHTML = `<div class="error-message">❌ ${data.error}</div>`;
             } else if (data.success) {
-                let html = '<div class="success-message">ℹ️ ' + data.message + '</div>';
-                html += '<div style="margin-top: 1rem;">';
-                html += '<div class="result-item"><span class="result-label">UID:</span><span class="result-value">' + data.uid + '</span></div>';
-                if (data.demo_structure) {
-                    Object.keys(data.demo_structure).forEach(key => {
-                        html += '<div class="result-item"><span class="result-label">' + key + ':</span><span class="result-value">' + data.demo_structure[key] + '</span></div>';
-                    });
+                if (data.player_data) {
+                    const pd = data.player_data;
+                    const guild = pd.guild || {};
+                    let html = `
+                        <div class="result-card">
+                            <div class="result-header">
+                                <strong>${pd.nickname}</strong>
+                                <span class="badge badge-orange">${pd.region}</span>
+                            </div>
+                            <div class="result-body">
+                                <div class="result-row">
+                                    <span class="result-label">UID:</span>
+                                    <span class="result-value">${data.uid}</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Level:</span>
+                                    <span class="result-value">${pd.level}</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Rank:</span>
+                                    <span class="result-value">${pd.rank}</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Likes:</span>
+                                    <span class="result-value">${pd.likes}</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Guild:</span>
+                                    <span class="result-value">${guild.name ? guild.name + ' (Lv.' + guild.level + ')' : 'None'}</span>
+                                </div>
+                                <div class="result-row">
+                                    <span class="result-label">Last Login:</span>
+                                    <span class="result-value" style="font-size: 0.8em;">${pd.last_login}</span>
+                                </div>
+                                
+                                <div style="margin-top: 5px; color: #ffd700; font-style: italic; font-size: 0.8rem; text-align: center;">
+                                    "${pd.bio || 'No Signature'}"
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    uidResults.innerHTML = html;
+                } else {
+                    let html = `
+                         <div class="result-card">
+                            <div class="result-header">
+                                <strong>${data.message}</strong>
+                                <span class="badge badge-orange">Found</span>
+                            </div>
+                             <div class="result-body">
+                                <div class="result-row">
+                                    <span class="result-label">UID:</span>
+                                    <span class="result-value">${data.uid}</span>
+                                </div>
+                                ${data.player_data || data.demo_structure ? Object.entries(data.player_data || data.demo_structure).filter(([_, v]) => typeof v !== 'object').map(([k, v]) => `
+                                    <div class="result-row">
+                                        <span class="result-label">${k}:</span>
+                                        <span class="result-value">${v}</span>
+                                    </div>
+                                `).join('') : ''}
+                             </div>
+                         </div>
+                    `;
+                    uidResults.innerHTML = html;
                 }
-                html += '</div>';
-                uidResults.innerHTML = html;
             }
         } catch (error) {
             uidResults.innerHTML = `<div class="error-message">❌ Error: ${error.message}</div>`;
         }
     });
 }
+
+// Global function for Add Friend Button
+// Global function for Add Friend Button
+window.sendFriendRequest = async function () {
+    const input = document.getElementById('friend-uid-input');
+    const uid = input.value.trim();
+    const actionSelect = document.getElementById('friend-action-select');
+    const action = actionSelect.value; // 'add' or 'remove'
+
+    const friendResult = document.getElementById('friend-result');
+
+    if (!uid) {
+        friendResult.style.display = 'block';
+        friendResult.innerHTML = '<div class="error-message">❌ Please enter a Target UID.</div>';
+        return;
+    }
+
+    const actionText = action === 'remove' ? 'Removing' : 'Adding';
+
+    friendResult.style.display = 'block';
+    friendResult.innerHTML = `<div class="loading-text">🔥 Spamming ${actionText} Friend x20 to ${uid}...<br><small>This takes ~6 seconds</small></div>`;
+
+    try {
+        let url = `/add-friend?uid=${encodeURIComponent(uid)}&action=${encodeURIComponent(action)}&count=20`;
+
+        const response = await fetch(url, {
+            method: 'POST'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            const d = data.details || {};
+            friendResult.innerHTML = `<div class="success-message">${data.message}<br><small>✅ ${d.success || 0} sent | ❌ ${d.failed || 0} failed</small></div>`;
+        } else {
+            friendResult.innerHTML = `<div class="error-message">${data.message}</div>`;
+        }
+    } catch (error) {
+        friendResult.innerHTML = `<div class="error-message">❌ Network Error: ${error.message}</div>`;
+    }
+};
+
+// === Team Spammer Logic ===
+
+window.toggleTeamInput = function (mode) {
+    const inviteGroup = document.getElementById('team-invite-input-group');
+    const joinGroup = document.getElementById('team-join-input-group');
+    const roomInviteGroup = document.getElementById('room-invite-input-group');
+    const roomJoinGroup = document.getElementById('room-join-input-group');
+
+    // Reset all
+    inviteGroup.style.display = 'none';
+    joinGroup.style.display = 'none';
+    if (roomInviteGroup) roomInviteGroup.style.display = 'none';
+    if (roomJoinGroup) roomJoinGroup.style.display = 'none';
+
+    if (mode === 'invite') {
+        inviteGroup.style.display = 'block';
+        document.getElementById('team-target-uid').focus();
+    } else if (mode === 'join') {
+        joinGroup.style.display = 'block';
+        document.getElementById('team-target-code').focus();
+    } else if (mode === 'room_invite') {
+        roomInviteGroup.style.display = 'block';
+        document.getElementById('room-target-uid').focus();
+    } else if (mode === 'room_join') {
+        roomJoinGroup.style.display = 'block';
+        document.getElementById('room-target-id').focus();
+    }
+};
+
+window.sendTeamAction = async function () {
+    // Get value from select instead of radio
+    const mode = document.getElementById('team-action-select').value;
+
+    const teamResult = document.getElementById('team-result');
+    teamResult.style.display = 'block';
+    teamResult.innerHTML = '<div class="loading-text">Processing...</div>';
+
+    try {
+        let response;
+        if (mode === 'invite') {
+            const uid = document.getElementById('team-target-uid').value.trim();
+            if (!uid) { teamResult.innerHTML = '<div class="error-message">❌ Please enter a UID</div>'; return; }
+            response = await fetch(`/team-invite?uid=${encodeURIComponent(uid)}`, { method: 'POST' });
+        } else if (mode === 'join') {
+            const code = document.getElementById('team-target-code').value.trim();
+            if (!code) { teamResult.innerHTML = '<div class="error-message">❌ Please enter a Team Code</div>'; return; }
+            response = await fetch(`/team-join?code=${encodeURIComponent(code)}`, { method: 'POST' });
+        } else if (mode === 'room_invite') {
+            const uid = document.getElementById('room-target-uid').value.trim();
+            const roomId = document.getElementById('room-target-id-inv').value.trim();
+            if (!uid || !roomId) { teamResult.innerHTML = '<div class="error-message">❌ Enter UID and Room ID</div>'; return; }
+            response = await fetch(`/room-invite?uid=${encodeURIComponent(uid)}&room_id=${encodeURIComponent(roomId)}`, { method: 'POST' });
+        } else if (mode === 'room_join') {
+            const roomId = document.getElementById('room-target-id').value.trim();
+            if (!roomId) { teamResult.innerHTML = '<div class="error-message">❌ Please enter a Room ID</div>'; return; }
+            response = await fetch(`/room-join?room_id=${encodeURIComponent(roomId)}`, { method: 'POST' });
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+            teamResult.innerHTML = `<div class="success-message">✅ ${data.message}</div>`;
+        } else {
+            teamResult.innerHTML = `<div class="error-message">❌ ${data.message}</div>`;
+        }
+    } catch (error) {
+        console.error(error);
+        teamResult.innerHTML = `<div class="error-message">❌ Network Error: ${error.message}</div>`;
+    }
+};
 
 // Account Info Display
 const accountForm = document.getElementById('accountForm');
@@ -419,8 +583,7 @@ if (accountForm) {
         e.preventDefault();
         const uid = this.querySelector('input[name="uid"]').value.trim();
 
-        accountResults.classList.remove('active');
-        accountResults.innerHTML = '<div class="success-message">⏳ Fetching account info...</div>';
+        accountResults.innerHTML = '<div class="loading-text">Fetching account info...</div>';
         accountResults.classList.add('active');
 
         try {
@@ -430,28 +593,18 @@ if (accountForm) {
             if (data.error) {
                 accountResults.innerHTML = `<div class="error-message">❌ ${data.error}</div>`;
             } else if (data.success) {
-                let html = '<div class="success-message">ℹ️ ' + data.message + '</div>';
-                html += '<div style="margin-top: 1rem;">';
-                html += '<div class="result-item"><span class="result-label">UID:</span><span class="result-value">' + data.uid + '</span></div>';
-
-                if (data.raw_data) {
-                    html += '<div style="margin-top: 1rem; color: var(--primary-orange); font-weight: 600;">Full Account Data:</div>';
-                    html += '<div class="json-container" style="max-height: 400px; overflow-y: auto; background: rgba(0,0,0,0.2); padding: 10px; border-radius: 5px;">';
-                    html += formatJSON(data.raw_data);
-                    html += '</div>';
-                } else if (data.available_data) {
-                    html += '<div style="margin-top: 1rem; color: var(--primary-orange); font-weight: 600;">Available Data Types:</div>';
-                    data.available_data.forEach(item => {
-                        html += '<div class="result-item">• ' + item + '</div>';
-                    });
-                }
-
-                if (data.note) {
-                    html += '<div style="margin-top: 1rem; padding: 0.5rem; background: rgba(255, 107, 53, 0.1); border-radius: 5px; font-size: 0.85rem;">';
-                    html += '💡 ' + data.note;
-                    html += '</div>';
-                }
-                html += '</div>';
+                let html = `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <strong>Account Info</strong>
+                            <span class="badge badge-orange">UID: ${data.uid}</span>
+                        </div>
+                        <div class="json-container">
+                            ${data.raw_data ? formatJSON(data.raw_data) : (data.available_data ? data.available_data.map(i => `<div>• ${i}</div>`).join('') : 'No details')}
+                        </div>
+                        ${data.note ? `<div class="footer-note">💡 ${data.note}</div>` : ''}
+                    </div>
+                `;
                 accountResults.innerHTML = html;
             }
         } catch (error) {
@@ -475,8 +628,7 @@ if (bioForm) {
             return;
         }
 
-        bioResults.classList.remove('active');
-        bioResults.innerHTML = '<div class="success-message">⏳ Updating signature...</div>';
+        bioResults.innerHTML = '<div class="loading-text">Updating signature...</div>';
         bioResults.classList.add('active');
 
         try {
@@ -502,11 +654,10 @@ if (bioForm) {
                 bioResults.innerHTML = html;
             } else {
                 let msg = data.message || data.detail || 'Unknown error occurred';
-                let errorHtml = `<div class="error-message">❌ ${msg}</div>`;
+                bioResults.innerHTML = `<div class="error-message">❌ ${msg}</div>`;
                 if (data.details) {
-                    errorHtml += `<div style="font-size: 0.8rem; margin-top: 0.5rem; color: #ff6b6b; opacity: 0.8; word-break: break-all;">Details: ${data.details}</div>`;
+                    bioResults.innerHTML += `<div class="error-message" style="margin-top:5px;">Details: ${data.details}</div>`;
                 }
-                bioResults.innerHTML = errorHtml;
             }
         } catch (error) {
             bioResults.innerHTML = `<div class="error-message">❌ Network Error: ${error.message}</div>`;
@@ -515,18 +666,25 @@ if (bioForm) {
 }
 
 // Helper function to format JSON data
+// Helper function to format JSON data with cleaner styling
 function formatJSON(obj, indent = 0) {
     let html = '';
-    const indentStr = '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(indent);
+    const paddingLeft = indent * 15; // px
 
     for (const [key, value] of Object.entries(obj)) {
         if (typeof value === 'object' && value !== null && !Array.isArray(value)) {
-            html += `<div class="result-item">${indentStr}<span class="result-label">${key}:</span></div>`;
+            html += `<div style="padding-left: ${paddingLeft}px; margin-top: 4px; color: var(--primary-orange); font-weight: 600; font-size: 0.85rem;">${key}:</div>`;
             html += formatJSON(value, indent + 1);
         } else if (Array.isArray(value)) {
-            html += `<div class="result-item">${indentStr}<span class="result-label">${key}:</span> [${value.join(', ')}]</div>`;
+            html += `<div style="padding-left: ${paddingLeft}px; margin-top: 2px;">
+                        <span style="color: #aaa;">${key}:</span> 
+                        <span style="color: #ddd;">[${value.join(', ')}]</span>
+                     </div>`;
         } else {
-            html += `<div class="result-item">${indentStr}<span class="result-label">${key}:</span><span class="result-value"> ${value}</span></div>`;
+            html += `<div style="padding-left: ${paddingLeft}px; display: flex; justify-content: space-between; border-bottom: 1px dashed rgba(255,255,255,0.05); padding-top: 2px; padding-bottom: 2px;">
+                        <span style="color: #bbb;">${key}</span>
+                        <span style="color: #fff; font-weight: 600; text-align: right;">${value}</span>
+                     </div>`;
         }
     }
     return html;
@@ -548,8 +706,7 @@ if (banForm) {
             return;
         }
 
-        banResults.classList.remove('active');
-        banResults.innerHTML = '<div class="success-message">⏳ Checking ban status...</div>';
+        banResults.innerHTML = '<div class="loading-text">Checking ban status...</div>';
         banResults.classList.add('active');
 
         try {
@@ -559,17 +716,34 @@ if (banForm) {
             if (data.error) {
                 banResults.innerHTML = `<div class="error-message">❌ ${data.error}</div>`;
             } else if (data.success) {
-                let html = `<div class="success-message">ℹ️ Status Check Complete</div>`;
-                html += '<div style="margin-top: 1rem;">';
-                html += `<div class="result-item"><span class="result-label">Nickname:</span><span class="result-value">${data.nickname}</span></div>`;
+                const statusClass = data.is_restricted ? 'badge-red' : 'badge-green';
+                const statusIcon = data.is_restricted ? '🛑' : '✅';
 
-                const statusColor = data.is_restricted ? '#ff4d4d' : '#00ff00';
-                html += `<div class="result-item"><span class="result-label">Status:</span><span class="result-value" style="color: ${statusColor}; font-weight: bold;">${data.status}</span></div>`;
-
-                html += `<div class="result-item"><span class="result-label">Details:</span><span class="result-value">${data.details}</span></div>`;
-                html += `<div class="result-item"><span class="result-label">CS Rank Ban:</span><span class="result-value">${data.cs_ban ? '❌ Yes' : '✅ No'}</span></div>`;
-                html += `<div class="result-item"><span class="result-label">Credit Score:</span><span class="result-value">${data.credit_score}</span></div>`;
-                html += '</div>';
+                let html = `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <strong>${data.nickname || 'Unknown'}</strong>
+                            <span class="badge ${statusClass}">${data.status}</span>
+                        </div>
+                        <div class="result-body">
+                             <div class="result-row">
+                                <span class="result-label">UID:</span>
+                                <span class="result-value">${uid}</span>
+                            </div>
+                            <div class="result-row">
+                                <span class="result-label">CS Rank Ban:</span>
+                                <span class="result-value" style="color: ${data.cs_ban ? '#ff4d4d' : '#00ff88'}">${data.cs_ban ? 'YES' : 'NO'}</span>
+                            </div>
+                             <div class="result-row">
+                                <span class="result-label">Credit Score:</span>
+                                <span class="result-value">${data.credit_score}</span>
+                            </div>
+                        </div>
+                        <div class="footer-note" style="color: #aaa; font-style: normal;">
+                            ${statusIcon} ${data.details}
+                        </div>
+                    </div>
+                `;
                 banResults.innerHTML = html;
             }
         } catch (error) {
@@ -595,3 +769,44 @@ if (updateBioBtn) {
         }
     });
 }
+
+// Token Extractor Logic
+function extractTokenFromUrl() {
+    const urlInput = document.getElementById('kiosgamer-url');
+    const resultDiv = document.getElementById('extractor-result');
+
+    if (!urlInput || !resultDiv) return;
+
+    const url = urlInput.value.trim();
+
+    if (!url) {
+        alert('Please paste a URL first.');
+        return;
+    }
+
+    // Pattern to find 'eat=' followed by the token until '&'
+    const match = url.match(/eat=([^&]+)/);
+
+    if (match && match[1]) {
+        const token = match[1];
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div class="success-message">✅ Token Extracted!</div>
+            <div style="margin-top: 10px;">
+                 <p style="font-size: 0.85rem; color: #aaa; margin: 0;">Access Token:</p>
+                 <div style="display:flex; gap: 5px;">
+                     <textarea id="extracted-token" readonly style="width: 100%; height: 60px; background: rgba(0,0,0,0.5); border: 1px solid #444; color: #0f0; border-radius: 4px; font-family: monospace; font-size: 0.8rem;">${token}</textarea>
+                 </div>
+                 <button onclick="navigator.clipboard.writeText(document.getElementById('extracted-token').value).then(() => { this.innerText = 'Copied!'; setTimeout(() => this.innerText = 'Copy Token', 2000); })" style="width: 100%; margin-top: 5px; background:var(--primary-orange); border:none; color:white; padding:8px; border-radius:4px; cursor:pointer; font-weight: bold;">Copy Token</button>
+            </div>
+        `;
+    } else {
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `<div class="error-message">❌ Could not find 'eat=' token in URL. Make sure it's a valid Kiosgamer link.</div>`;
+    }
+}
+
+// ===== LEGACY SUPPORT =====
+// No-op stubs in case any code calls these
+window.openModal = function () { };
+window.closeModal = function () { };
