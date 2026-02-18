@@ -6,3 +6,4 @@ protobuf
 python-multipart
 requests
 colorama
+pydantic
