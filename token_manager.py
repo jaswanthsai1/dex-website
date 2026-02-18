@@ -46,10 +46,10 @@ except Exception as e:
 try:
     from proto import FreeFire_pb2, main_pb2, AccountPersonalShow_pb2
 except ImportError:
-    print(f"{Fore.RED}Error: Protobuf modules not found. "
-          f"Please ensure FreeFire_pb2.py, main_pb2.py, and AccountPersonalShow_pb2.py "
-          f"are in the proto/ directory.{Style.RESET_ALL}")
-    exit(1)
+    print(f"{Fore.RED}Warning: Protobuf modules not found. Real data fetching will be disabled.{Style.RESET_ALL}")
+    FreeFire_pb2 = None
+    main_pb2 = None
+    AccountPersonalShow_pb2 = None
 
 # === Helper Functions ===
 def pad_data(text: bytes) -> bytes:
