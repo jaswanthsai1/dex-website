@@ -18,8 +18,13 @@ MAIN_KEY = base64.b64decode('WWcmdGMlREV1aDYlWmNeOA==')
 MAIN_IV = base64.b64decode('Nm95WkRyMjJFM3ljaGpNJQ==')
 USERAGENT = "Dalvik/2.1.0 (Linux; U; Android 7.1.2; ASUS_Z01QD Build/QKQ1.190825.002)"
 RELEASEVERSION = "OB52"
-MASTER_TOKEN_FILE = "master_token.txt"
-GUEST_GENERATED_FILE = "guest_generated.dat"
+
+# Vercel Read-Only File System Check
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+TEMP_DIR = "/tmp" if IS_VERCEL else "."
+
+MASTER_TOKEN_FILE = os.path.join(TEMP_DIR, "master_token.txt")
+GUEST_GENERATED_FILE = os.path.join(TEMP_DIR, "guest_generated.dat")
 
 # === MyMessage Protobuf Setup ===
 from google.protobuf import descriptor as _descriptor

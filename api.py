@@ -45,7 +45,11 @@ TEST_UIDS_CONFIG = {
 }
 
 # Token file for Bot Categories
-TOKEN_FILE = 'acc_token.json'
+# Vercel Read-Only File System Check
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+TEMP_DIR = "/tmp" if IS_VERCEL else "."
+
+TOKEN_FILE = os.path.join(TEMP_DIR, 'acc_token.json')
 
 def load_tokens():
     if not os.path.exists(TOKEN_FILE):
@@ -59,7 +63,7 @@ def load_tokens():
         return None
 
 # Token file for Bot Categories
-TOKEN_FILE = 'acc_token.json'
+TOKEN_FILE = os.path.join(TEMP_DIR, 'acc_token.json')
 
 def load_tokens():
     if not os.path.exists(TOKEN_FILE):
@@ -75,8 +79,8 @@ def load_tokens():
 # === Import Protobuf Modules ===
 try:
     from proto import FreeFire_pb2, main_pb2, AccountPersonalShow_pb2
-except ImportError:
-    print("Warning: Protobuf modules not found. Real data fetching will be disabled.")
+except ImportError as e:
+    print(f"❌ Critical Warning: Protobuf modules not found: {e}. Real data fetching will be disabled.")
     FreeFire_pb2 = None
     main_pb2 = None
     AccountPersonalShow_pb2 = None
