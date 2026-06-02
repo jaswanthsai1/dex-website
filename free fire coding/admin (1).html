@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spotify Admin Panel</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background: #121212;
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+        }
+        
+        input, textarea, select {
+            background: #282828;
+            border: 1px solid #404040;
+            color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #1DB954;
+            box-shadow: 0 0 0 2px rgba(29, 185, 84, 0.2);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #888;
+        }
+        
+        .btn-primary {
+            background: #1DB954;
+            transition: background 0.2s, transform 0.1s;
+        }
+        
+        .btn-primary:hover {
+            background: #1ed760;
+        }
+        
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary:disabled {
+            background: #535353;
+            cursor: not-allowed;
+        }
+        
+        .song-card, .category-card {
+            background: #181818;
+            border: 1px solid #282828;
+            transition: background 0.2s, border-color 0.2s;
+        }
+        
+        .song-card:hover, .category-card:hover {
+            background: #282828;
+            border-color: #404040;
+        }
+        
+        .btn-icon {
+            transition: background 0.2s, transform 0.1s;
+        }
+        
+        .btn-icon:hover {
+            background: rgba(255,255,255,0.1);
+        }
+        
+        .btn-icon:active {
+            transform: scale(0.9);
+        }
+        
+        .toast {
+            animation: slideUp 0.3s ease, fadeOut 0.3s ease 2.7s;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        
+        .loading-spinner {
+            border: 3px solid #282828;
+            border-top: 3px solid #1DB954;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .skeleton {
+            background: linear-gradient(90deg, #282828 25%, #383838 50%, #282828 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: 200% 0; }
+            100% { background-position: -200% 0; }
+        }
+        
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #121212;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #535353;
+            border-radius: 3px;
+        }
+
+        .modal-overlay {
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(4px);
+        }
+        
+        .tab-btn {
+            transition: all 0.2s;
+        }
+        
+        .tab-btn.active {
+            background: #1DB954;
+            color: black;
+        }
+        
+        /* Developer Section Premium Styles */
+        .dev-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            border: 1px solid rgba(29, 185, 84, 0.3);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4), 0 0 60px rgba(29, 185, 84, 0.1);
+        }
+        
+        .dev-avatar-ring {
+            background: conic-gradient(from 0deg, #1DB954, #1ed760, #00ff88, #1DB954);
+            padding: 3px;
+            border-radius: 50%;
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        .social-btn {
+            transition: all 0.3s ease;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .social-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .social-btn.github:hover { background: #333; border-color: #333; }
+        .social-btn.telegram:hover { background: #0088cc; border-color: #0088cc; }
+        .social-btn.whatsapp:hover { background: #25D366; border-color: #25D366; }
+        .social-btn.youtube:hover { background: #FF0000; border-color: #FF0000; }
+        
+        .glow-text {
+            text-shadow: 0 0 20px rgba(29, 185, 84, 0.5);
+        }
+        
+        .input-premium {
+            background: linear-gradient(145deg, #1e1e2e, #252540);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .input-premium:focus {
+            border-color: #1DB954;
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.2);
+        }
+        
+        .preview-card {
+            background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+            border: 1px solid rgba(29, 185, 84, 0.2);
+        }
+        
+        /* Login Page Styles */
+        .login-container {
+            background: linear-gradient(135deg, #121212 0%, #1a1a2e 50%, #0f3460 100%);
+            min-height: 100vh;
+        }
+        
+        .login-card {
+            background: rgba(24, 24, 24, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+        
+        .login-input {
+            background: rgba(40, 40, 40, 0.8);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            transition: all 0.3s;
+        }
+        
+        .login-input:focus {
+            outline: none;
+            border-color: #1DB954;
+            box-shadow: 0 0 20px rgba(29, 185, 84, 0.3);
+            background: rgba(40, 40, 40, 1);
+        }
+        
+        .login-input::placeholder {
+            color: #666;
+        }
+        
+        .spotify-logo {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+        
+        @keyframes pulse-glow {
+            0%, 100% { filter: drop-shadow(0 0 20px rgba(29, 185, 84, 0.5)); }
+            50% { filter: drop-shadow(0 0 40px rgba(29, 185, 84, 0.8)); }
+        }
+        
+        .login-btn {
+            background: linear-gradient(135deg, #1DB954 0%, #1ed760 100%);
+            transition: all 0.3s;
+        }
+        
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(29, 185, 84, 0.4);
+        }
+        
+        .login-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .login-btn:disabled {
+            background: #535353;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .input-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            transition: color 0.3s;
+        }
+        
+        .input-wrapper:focus-within .input-icon {
+            color: #1DB954;
+        }
+        
+        .error-message {
+            animation: shake 0.5s ease;
+        }
+        
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+        
+        .floating-shapes {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            pointer-events: none;
+        }
+        
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(29, 185, 84, 0.1), rgba(29, 185, 84, 0.05));
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .shape:nth-child(1) { width: 200px; height: 200px; top: 10%; left: -50px; animation-delay: 0s; }
+        .shape:nth-child(2) { width: 150px; height: 150px; top: 60%; right: -40px; animation-delay: 2s; }
+        .shape:nth-child(3) { width: 100px; height: 100px; bottom: 10%; left: 20%; animation-delay: 4s; }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-30px) rotate(180deg); }
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        
+        .password-toggle:hover {
+            color: #1DB954;
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="login-container flex items-center justify-center px-4">
+        <!-- Floating Shapes -->
+        <div class="floating-shapes">
+            <div class="shape"></div>
+            <div class="shape"></div>
+            <div class="shape"></div>
+        </div>
+        
+        <div class="login-card rounded-2xl p-8 w-full max-w-[400px] relative z-10">
+            <!-- Logo -->
+            <div class="text-center mb-8">
+                <div class="spotify-logo inline-block mb-4">
+                    <svg class="w-16 h-16 text-[#1DB954]" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+                    </svg>
+                </div>
+                <h1 class="text-2xl font-bold text-white mb-2">Admin Panel</h1>
+                <p class="text-gray-400 text-sm">Sign in to manage your music library</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-5">
+                <!-- Email -->
+                <div class="input-wrapper relative">
+                    <div class="input-icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"/>
+                        </svg>
+                    </div>
+                    <input type="email" id="loginEmail" required placeholder="Email address" 
+                        class="login-input w-full pl-12 pr-4 py-4 rounded-xl text-sm">
+                </div>
+                
+                <!-- Password -->
+                <div class="input-wrapper relative">
+                    <div class="input-icon">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/>
+                        </svg>
+                    </div>
+                    <input type="password" id="loginPassword" required placeholder="Password" 
+                        class="login-input w-full pl-12 pr-12 py-4 rounded-xl text-sm">
+                    <div class="password-toggle" onclick="togglePassword()">
+                        <svg id="eyeIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        <svg id="eyeOffIcon" class="w-5 h-5 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"/>
+                        </svg>
+                    </div>
+                </div>
+                
+                <!-- Error Message -->
+                <div id="loginError" class="hidden error-message bg-red-500/20 border border-red-500/50 rounded-lg p-3">
+                    <p id="errorText" class="text-red-400 text-sm text-center">Invalid credentials</p>
+                </div>
+                
+                <!-- Login Button -->
+                <button type="submit" id="loginBtn" 
+                    class="login-btn w-full py-4 rounded-xl text-black font-bold text-sm flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                    Sign In to Admin
+                </button>
+            </form>
+            
+            <!-- Security Info -->
+            <div class="mt-6 pt-6 border-t border-gray-700">
+                <div class="flex items-center justify-center gap-2 text-gray-500 text-xs">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                    </svg>
+                    <span>Secured with Firebase Authentication</span>
+                </div>
+            </div>
+            
+            <!-- Back to Player Link -->
+            <div class="text-center mt-4">
+                <a href="index.html" class="text-gray-400 text-sm hover:text-[#1DB954] transition-colors">
+                    ← Back to Music Player
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container hidden" id="adminPanel">
+        <!-- Header -->
+        <header class="sticky top-0 z-40 bg-[#121212] border-b border-gray-800">
+            <div class="px-4 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <a href="index.html" class="w-10 h-10 bg-[#1DB954] rounded-full flex items-center justify-center">
+                            <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                            </svg>
+                        </a>
+                        <div>
+                            <h1 class="text-xl font-bold text-white">Admin Panel</h1>
+                            <p id="adminEmail" class="text-xs text-gray-400">admin@example.com</p>
+                        </div>
+                    </div>
+                    <button onclick="logout()" class="flex items-center gap-2 bg-[#282828] px-4 py-2 rounded-full text-sm text-white hover:bg-[#383838] transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Logout
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Tabs -->
+            <div class="flex px-4 pb-3 gap-2">
+                <button onclick="switchTab('songs')" id="tabSongs" class="tab-btn active flex-1 py-2 rounded-full text-sm font-semibold">
+                    Songs
+                </button>
+                <button onclick="switchTab('categories')" id="tabCategories" class="tab-btn flex-1 py-2 rounded-full text-sm font-semibold bg-[#282828] text-white">
+                    Categories
+                </button>
+                <button onclick="switchTab('developer')" id="tabDeveloper" class="tab-btn flex-1 py-2 rounded-full text-sm font-semibold bg-[#282828] text-white">
+                    Developer
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="px-4 py-6">
+            <!-- Songs Section -->
+            <div id="songsSection">
+                <!-- Add Song Form -->
+                <div class="bg-[#181818] rounded-xl p-5 mb-6 border border-gray-800">
+                    <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        Add New Song
+                    </h2>
+                    
+                    <form id="songForm" class="space-y-4">
+                        <!-- Category Selection -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Category *</label>
+                            <select id="songCategory" required class="w-full px-4 py-3 rounded-lg text-sm">
+                                <option value="">Select Category</option>
+                            </select>
+                        </div>
+                        
+                        <!-- Song Title -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Song Title *</label>
+                            <input type="text" id="songTitle" required placeholder="Enter song title" 
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                        </div>
+                        
+                        <!-- Artist Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Artist Name *</label>
+                            <input type="text" id="artistName" required placeholder="Enter artist name" 
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                        </div>
+                        
+                        <!-- Cover Image URL -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Cover Image URL *</label>
+                            <input type="url" id="coverImage" required placeholder="https://example.com/image.jpg" 
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Direct link to album artwork image</p>
+                        </div>
+                        
+                        <!-- Song URL -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Song URL (MP3 Link) *</label>
+                            <input type="url" id="songUrl" required placeholder="https://example.com/song.mp3" 
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Direct link to audio file</p>
+                        </div>
+                        
+                        <!-- Duration -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Duration *</label>
+                            <input type="text" id="duration" required placeholder="3:45" pattern="[0-9]+:[0-5][0-9]"
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Format: minutes:seconds (e.g., 3:45)</p>
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div id="previewSection" class="hidden">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Preview</label>
+                            <div class="flex items-center gap-3 bg-[#282828] p-3 rounded-lg">
+                                <img id="previewImage" src="" alt="Cover" class="w-14 h-14 rounded object-cover bg-gray-700">
+                                <div class="flex-1 min-w-0">
+                                    <p id="previewTitle" class="text-white font-medium truncate text-sm">Song Title</p>
+                                    <p id="previewArtist" class="text-gray-400 text-xs truncate">Artist Name</p>
+                                </div>
+                                <span id="previewDuration" class="text-xs text-gray-400">0:00</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" id="submitBtn" 
+                            class="btn-primary w-full py-3 rounded-full text-black font-semibold text-sm flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+                            </svg>
+                            Upload Song
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Songs List -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                            All Songs
+                        </h2>
+                        <span id="songCount" class="text-xs text-gray-400 bg-[#282828] px-3 py-1 rounded-full">0 songs</span>
+                    </div>
+                    
+                    <!-- Loading State -->
+                    <div id="loadingState" class="space-y-3">
+                        <div class="song-card p-4 rounded-xl flex items-center gap-3">
+                            <div class="w-14 h-14 rounded skeleton"></div>
+                            <div class="flex-1">
+                                <div class="h-4 w-32 rounded skeleton mb-2"></div>
+                                <div class="h-3 w-24 rounded skeleton"></div>
+                            </div>
+                        </div>
+                        <div class="song-card p-4 rounded-xl flex items-center gap-3">
+                            <div class="w-14 h-14 rounded skeleton"></div>
+                            <div class="flex-1">
+                                <div class="h-4 w-40 rounded skeleton mb-2"></div>
+                                <div class="h-3 w-20 rounded skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="emptyState" class="hidden text-center py-12">
+                        <div class="w-20 h-20 bg-[#282828] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+                            </svg>
+                        </div>
+                        <p class="text-gray-400 mb-2">No songs uploaded yet</p>
+                        <p class="text-gray-500 text-sm">Add your first song using the form above</p>
+                    </div>
+                    
+                    <!-- Songs Container -->
+                    <div id="songsContainer" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- Categories Section -->
+            <div id="categoriesSection" class="hidden">
+                <!-- Add Category Form -->
+                <div class="bg-[#181818] rounded-xl p-5 mb-6 border border-gray-800">
+                    <h2 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm5 11h-4v4h-2v-4H7v-2h4V7h2v4h4v2z"/>
+                        </svg>
+                        Add New Category
+                    </h2>
+                    
+                    <form id="categoryForm" class="space-y-4">
+                        <!-- Category Title -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Category Title *</label>
+                            <input type="text" id="categoryTitle" required placeholder="e.g., Pop, Rock, Jazz" 
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                        </div>
+                        
+                        <!-- Category Logo URL -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Category Logo URL *</label>
+                            <input type="url" id="categoryLogo" required placeholder="https://example.com/logo.png" 
+                                class="w-full px-4 py-3 rounded-lg text-sm">
+                            <p class="text-xs text-gray-500 mt-1">Direct link to category logo/icon image</p>
+                        </div>
+                        
+                        <!-- Category Preview -->
+                        <div id="categoryPreviewSection" class="hidden">
+                            <label class="block text-sm font-medium text-gray-300 mb-2">Preview</label>
+                            <div class="flex items-center gap-3 bg-[#282828] p-3 rounded-lg">
+                                <img id="categoryPreviewImage" src="" alt="Logo" class="w-14 h-14 rounded-full object-cover bg-gray-700">
+                                <div class="flex-1 min-w-0">
+                                    <p id="categoryPreviewTitle" class="text-white font-medium truncate">Category Name</p>
+                                    <p class="text-gray-400 text-xs">Category</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" id="categorySubmitBtn" 
+                            class="btn-primary w-full py-3 rounded-full text-black font-semibold text-sm flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                            </svg>
+                            Create Category
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Categories List -->
+                <div>
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+                            </svg>
+                            All Categories
+                        </h2>
+                        <span id="categoryCount" class="text-xs text-gray-400 bg-[#282828] px-3 py-1 rounded-full">0 categories</span>
+                    </div>
+                    
+                    <!-- Category Loading State -->
+                    <div id="categoryLoadingState" class="space-y-3">
+                        <div class="category-card p-4 rounded-xl flex items-center gap-3">
+                            <div class="w-14 h-14 rounded-full skeleton"></div>
+                            <div class="flex-1">
+                                <div class="h-4 w-32 rounded skeleton mb-2"></div>
+                                <div class="h-3 w-20 rounded skeleton"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Category Empty State -->
+                    <div id="categoryEmptyState" class="hidden text-center py-12">
+                        <div class="w-20 h-20 bg-[#282828] rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-10 h-10 text-gray-500" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M4 8h4V4H4v4zm6 12h4v-4h-4v4zm-6 0h4v-4H4v4zm0-6h4v-4H4v4zm6 0h4v-4h-4v4zm6-10v4h4V4h-4zm-6 4h4V4h-4v4zm6 6h4v-4h-4v4zm0 6h4v-4h-4v4z"/>
+                            </svg>
+                        </div>
+                        <p class="text-gray-400 mb-2">No categories created yet</p>
+                        <p class="text-gray-500 text-sm">Create your first category using the form above</p>
+                    </div>
+                    
+                    <!-- Categories Container -->
+                    <div id="categoriesContainer" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- Developer Section -->
+            <div id="developerSection" class="hidden">
+                <!-- Developer Profile Form -->
+                <div class="dev-card rounded-2xl p-6 mb-6">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-12 rounded-full bg-gradient-to-br from-[#1DB954] to-[#00ff88] flex items-center justify-center">
+                            <svg class="w-6 h-6 text-black" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-xl font-bold text-white glow-text">Developer Profile</h2>
+                            <p class="text-xs text-gray-400">Customize your developer information</p>
+                        </div>
+                    </div>
+                    
+                    <form id="developerForm" class="space-y-5">
+                        <!-- Profile Picture URL -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Profile Picture URL *</label>
+                            <input type="url" id="devAvatar" required placeholder="https://example.com/avatar.jpg" 
+                                class="input-premium w-full px-4 py-3 rounded-lg text-sm text-white">
+                        </div>
+                        
+                        <!-- Developer Name -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Developer Name *</label>
+                            <input type="text" id="devName" required placeholder="John Doe" 
+                                class="input-premium w-full px-4 py-3 rounded-lg text-sm text-white">
+                        </div>
+                        
+                        <!-- Title / Role -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Title / Role *</label>
+                            <input type="text" id="devTitle" required placeholder="Full Stack Developer & UI/UX Designer" 
+                                class="input-premium w-full px-4 py-3 rounded-lg text-sm text-white">
+                        </div>
+                        
+                        <!-- Bio / Description -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-300 mb-1.5">Bio / Description *</label>
+                            <textarea id="devBio" required rows="4" placeholder="Write a compelling description about yourself, your skills, and your passion for development..." 
+                                class="input-premium w-full px-4 py-3 rounded-lg text-sm text-white resize-none"></textarea>
+                        </div>
+                        
+                        <!-- Social Media Links -->
+                        <div class="pt-2">
+                            <h3 class="text-sm font-semibold text-white mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92s2.92-1.31 2.92-2.92-1.31-2.92-2.92-2.92z"/>
+                                </svg>
+                                Social Media Links
+                            </h3>
+                            
+                            <!-- GitHub -->
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 bg-[#333] rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                    </svg>
+                                </div>
+                                <input type="url" id="devGithub" placeholder="https://github.com/username" 
+                                    class="input-premium flex-1 px-4 py-3 rounded-lg text-sm text-white">
+                            </div>
+                            
+                            <!-- Telegram -->
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 bg-[#0088cc] rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                                    </svg>
+                                </div>
+                                <input type="url" id="devTelegram" placeholder="https://t.me/username" 
+                                    class="input-premium flex-1 px-4 py-3 rounded-lg text-sm text-white">
+                            </div>
+                            
+                            <!-- WhatsApp -->
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-10 h-10 bg-[#25D366] rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                    </svg>
+                                </div>
+                                <input type="url" id="devWhatsapp" placeholder="https://wa.me/1234567890" 
+                                    class="input-premium flex-1 px-4 py-3 rounded-lg text-sm text-white">
+                            </div>
+                            
+                            <!-- YouTube -->
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-[#FF0000] rounded-lg flex items-center justify-center flex-shrink-0">
+                                    <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                    </svg>
+                                </div>
+                                <input type="url" id="devYoutube" placeholder="https://youtube.com/@channel" 
+                                    class="input-premium flex-1 px-4 py-3 rounded-lg text-sm text-white">
+                            </div>
+                        </div>
+                        
+                        <!-- Preview -->
+                        <div id="devPreviewSection" class="hidden pt-4">
+                            <label class="block text-sm font-medium text-gray-300 mb-3">Live Preview</label>
+                            <div class="preview-card rounded-xl p-5">
+                                <div class="flex flex-col items-center text-center">
+                                    <div class="dev-avatar-ring mb-4">
+                                        <img id="devPreviewAvatar" src="" class="w-24 h-24 rounded-full object-cover bg-gray-700">
+                                    </div>
+                                    <h3 id="devPreviewName" class="text-xl font-bold text-white mb-1">Developer Name</h3>
+                                    <p id="devPreviewTitle" class="text-[#1DB954] text-sm font-medium mb-3">Title / Role</p>
+                                    <p id="devPreviewBio" class="text-gray-400 text-sm leading-relaxed mb-4">Bio will appear here...</p>
+                                    <div class="flex gap-3">
+                                        <div id="previewGithub" class="hidden w-10 h-10 bg-[#333] rounded-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                            </svg>
+                                        </div>
+                                        <div id="previewTelegram" class="hidden w-10 h-10 bg-[#0088cc] rounded-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/>
+                                            </svg>
+                                        </div>
+                                        <div id="previewWhatsapp" class="hidden w-10 h-10 bg-[#25D366] rounded-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
+                                            </svg>
+                                        </div>
+                                        <div id="previewYoutube" class="hidden w-10 h-10 bg-[#FF0000] rounded-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                                            </svg>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Submit Button -->
+                        <button type="submit" id="devSubmitBtn" 
+                            class="btn-primary w-full py-3.5 rounded-full text-black font-bold text-sm flex items-center justify-center gap-2 mt-6">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                            </svg>
+                            Save Developer Profile
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Current Developer Info -->
+                <div id="currentDevInfo" class="hidden">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+                            </svg>
+                            Current Profile
+                        </h2>
+                        <span class="text-xs text-[#1DB954] bg-[#1DB954]/20 px-3 py-1 rounded-full font-medium">Active</span>
+                    </div>
+                    
+                    <div id="devProfileCard" class="preview-card rounded-xl p-5">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- Toast Notification -->
+        <div id="toast" class="fixed bottom-6 left-4 right-4 max-w-[448px] mx-auto hidden z-50">
+            <div class="toast bg-[#1DB954] text-black px-4 py-3 rounded-lg font-medium text-sm flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                </svg>
+                <span id="toastMessage">Success!</span>
+            </div>
+        </div>
+        
+        <!-- Edit Song Modal -->
+        <div id="editModal" class="fixed inset-0 z-50 hidden">
+            <div class="modal-overlay absolute inset-0" onclick="closeEditModal()"></div>
+            <div class="absolute bottom-0 left-0 right-0 bg-[#181818] rounded-t-2xl p-5 max-w-[480px] mx-auto max-h-[90vh] overflow-y-auto">
+                <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold text-white mb-4">Edit Song</h3>
+                
+                <form id="editForm" class="space-y-4">
+                    <input type="hidden" id="editSongId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Category</label>
+                        <select id="editCategory" required class="w-full px-4 py-3 rounded-lg text-sm">
+                            <option value="">Select Category</option>
+                        </select>
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Song Title</label>
+                        <input type="text" id="editTitle" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Artist Name</label>
+                        <input type="text" id="editArtist" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Cover Image URL</label>
+                        <input type="url" id="editCover" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Song URL</label>
+                        <input type="url" id="editUrl" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Duration</label>
+                        <input type="text" id="editDuration" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" onclick="closeEditModal()" 
+                            class="flex-1 py-3 rounded-full border border-gray-600 text-white font-semibold text-sm">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                            class="btn-primary flex-1 py-3 rounded-full text-black font-semibold text-sm">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Edit Category Modal -->
+        <div id="editCategoryModal" class="fixed inset-0 z-50 hidden">
+            <div class="modal-overlay absolute inset-0" onclick="closeEditCategoryModal()"></div>
+            <div class="absolute bottom-0 left-0 right-0 bg-[#181818] rounded-t-2xl p-5 max-w-[480px] mx-auto">
+                <div class="w-12 h-1 bg-gray-600 rounded-full mx-auto mb-4"></div>
+                <h3 class="text-lg font-semibold text-white mb-4">Edit Category</h3>
+                
+                <form id="editCategoryForm" class="space-y-4">
+                    <input type="hidden" id="editCategoryId">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Category Title</label>
+                        <input type="text" id="editCategoryTitle" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-300 mb-1.5">Category Logo URL</label>
+                        <input type="url" id="editCategoryLogo" required class="w-full px-4 py-3 rounded-lg text-sm">
+                    </div>
+                    
+                    <div class="flex gap-3 pt-2">
+                        <button type="button" onclick="closeEditCategoryModal()" 
+                            class="flex-1 py-3 rounded-full border border-gray-600 text-white font-semibold text-sm">
+                            Cancel
+                        </button>
+                        <button type="submit" 
+                            class="btn-primary flex-1 py-3 rounded-full text-black font-semibold text-sm">
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Delete Confirmation Modal -->
+        <div id="deleteModal" class="fixed inset-0 z-50 hidden">
+            <div class="modal-overlay absolute inset-0" onclick="closeDeleteModal()"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#282828] rounded-2xl p-6 w-[90%] max-w-[340px]">
+                <div class="text-center">
+                    <div class="w-14 h-14 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-7 h-7 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                        </svg>
+                    </div>
+                    <h3 id="deleteModalTitle" class="text-lg font-semibold text-white mb-2">Delete Song?</h3>
+                    <p class="text-gray-400 text-sm mb-6">This action cannot be undone. It will be permanently removed.</p>
+                    
+                    <input type="hidden" id="deleteItemId">
+                    <input type="hidden" id="deleteItemType">
+                    
+                    <div class="flex gap-3">
+                        <button onclick="closeDeleteModal()" 
+                            class="flex-1 py-3 rounded-full border border-gray-600 text-white font-semibold text-sm">
+                            Cancel
+                        </button>
+                        <button onclick="confirmDelete()" 
+                            class="flex-1 py-3 rounded-full bg-red-500 text-white font-semibold text-sm">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, push, set, onValue, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAyLbREnabea9P-ZxlC6OoQNioZPM7dcxM",
+            authDomain: "music-2d0fd.firebaseapp.com",
+            databaseURL: "https://music-2d0fd-default-rtdb.firebaseio.com",
+            projectId: "music-2d0fd",
+            storageBucket: "music-2d0fd.firebasestorage.app",
+            messagingSenderId: "882717702668",
+            appId: "1:882717702668:web:ce69c1b13c5a18efd84c29",
+            measurementId: "G-3HE3ZQW1K7"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const database = getDatabase(app);
+        const musicRef = ref(database, 'music');
+        const categoriesRef = ref(database, 'categories');
+        const developerRef = ref(database, 'developer');
+
+        // Store categories globally
+        let categoriesData = {};
+
+        // DOM Elements
+        const loginScreen = document.getElementById('loginScreen');
+        const adminPanel = document.getElementById('adminPanel');
+        const loginForm = document.getElementById('loginForm');
+        const loginEmail = document.getElementById('loginEmail');
+        const loginPassword = document.getElementById('loginPassword');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const errorText = document.getElementById('errorText');
+        const adminEmail = document.getElementById('adminEmail');
+
+        // Toggle Password Visibility
+        window.togglePassword = function() {
+            const passwordInput = document.getElementById('loginPassword');
+            const eyeIcon = document.getElementById('eyeIcon');
+            const eyeOffIcon = document.getElementById('eyeOffIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                eyeIcon.classList.add('hidden');
+                eyeOffIcon.classList.remove('hidden');
+            } else {
+                passwordInput.type = 'password';
+                eyeIcon.classList.remove('hidden');
+                eyeOffIcon.classList.add('hidden');
+            }
+        };
+
+        // Auth State Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                loginScreen.classList.add('hidden');
+                adminPanel.classList.remove('hidden');
+                adminEmail.textContent = user.email;
+                initializeAdmin();
+            } else {
+                // User is signed out
+                loginScreen.classList.remove('hidden');
+                adminPanel.classList.add('hidden');
+            }
+        });
+
+        // Login Form Submit
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<div class="loading-spinner border-black border-t-white"></div>';
+            loginError.classList.add('hidden');
+
+            const email = loginEmail.value.trim();
+            const password = loginPassword.value;
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+            } catch (error) {
+                console.error('Login error:', error);
+                loginError.classList.remove('hidden');
+                
+                switch (error.code) {
+                    case 'auth/user-not-found':
+                        errorText.textContent = 'No admin account found with this email';
+                        break;
+                    case 'auth/wrong-password':
+                        errorText.textContent = 'Incorrect password';
+                        break;
+                    case 'auth/invalid-email':
+                        errorText.textContent = 'Invalid email address';
+                        break;
+                    case 'auth/too-many-requests':
+                        errorText.textContent = 'Too many failed attempts. Try again later';
+                        break;
+                    default:
+                        errorText.textContent = 'Login failed. Please try again';
+                }
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z"/>
+                </svg> Sign In to Admin`;
+            }
+        });
+
+        // Logout
+        window.logout = async function() {
+            try {
+                await signOut(auth);
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+        };
+
+        // Initialize Admin Panel
+        function initializeAdmin() {
+            const songForm = document.getElementById('songForm');
+            const categoryForm = document.getElementById('categoryForm');
+            const developerForm = document.getElementById('developerForm');
+            const songsContainer = document.getElementById('songsContainer');
+            const categoriesContainer = document.getElementById('categoriesContainer');
+            const loadingState = document.getElementById('loadingState');
+            const categoryLoadingState = document.getElementById('categoryLoadingState');
+            const emptyState = document.getElementById('emptyState');
+            const categoryEmptyState = document.getElementById('categoryEmptyState');
+            const songCount = document.getElementById('songCount');
+            const categoryCount = document.getElementById('categoryCount');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const submitBtn = document.getElementById('submitBtn');
+            const categorySubmitBtn = document.getElementById('categorySubmitBtn');
+            const devSubmitBtn = document.getElementById('devSubmitBtn');
+            const previewSection = document.getElementById('previewSection');
+            const categoryPreviewSection = document.getElementById('categoryPreviewSection');
+            const devPreviewSection = document.getElementById('devPreviewSection');
+
+            // Form inputs - Songs
+            const songCategory = document.getElementById('songCategory');
+            const songTitle = document.getElementById('songTitle');
+            const artistName = document.getElementById('artistName');
+            const coverImage = document.getElementById('coverImage');
+            const songUrl = document.getElementById('songUrl');
+            const duration = document.getElementById('duration');
+
+            // Form inputs - Categories
+            const categoryTitle = document.getElementById('categoryTitle');
+            const categoryLogo = document.getElementById('categoryLogo');
+
+            // Form inputs - Developer
+            const devAvatar = document.getElementById('devAvatar');
+            const devName = document.getElementById('devName');
+            const devTitle = document.getElementById('devTitle');
+            const devBio = document.getElementById('devBio');
+            const devGithub = document.getElementById('devGithub');
+            const devTelegram = document.getElementById('devTelegram');
+            const devWhatsapp = document.getElementById('devWhatsapp');
+            const devYoutube = document.getElementById('devYoutube');
+
+            // Preview elements
+            const previewImage = document.getElementById('previewImage');
+            const previewTitle = document.getElementById('previewTitle');
+            const previewArtist = document.getElementById('previewArtist');
+            const previewDuration = document.getElementById('previewDuration');
+            const categoryPreviewImage = document.getElementById('categoryPreviewImage');
+            const categoryPreviewTitle = document.getElementById('categoryPreviewTitle');
+
+            // Tab Switching
+            window.switchTab = function(tab) {
+                const tabSongs = document.getElementById('tabSongs');
+                const tabCategories = document.getElementById('tabCategories');
+                const tabDeveloper = document.getElementById('tabDeveloper');
+                const songsSection = document.getElementById('songsSection');
+                const categoriesSection = document.getElementById('categoriesSection');
+                const developerSection = document.getElementById('developerSection');
+                
+                [tabSongs, tabCategories, tabDeveloper].forEach(t => {
+                    t.classList.remove('active');
+                    t.classList.add('bg-[#282828]', 'text-white');
+                });
+                [songsSection, categoriesSection, developerSection].forEach(s => s.classList.add('hidden'));
+                
+                if (tab === 'songs') {
+                    tabSongs.classList.add('active');
+                    tabSongs.classList.remove('bg-[#282828]', 'text-white');
+                    songsSection.classList.remove('hidden');
+                } else if (tab === 'categories') {
+                    tabCategories.classList.add('active');
+                    tabCategories.classList.remove('bg-[#282828]', 'text-white');
+                    categoriesSection.classList.remove('hidden');
+                } else if (tab === 'developer') {
+                    tabDeveloper.classList.add('active');
+                    tabDeveloper.classList.remove('bg-[#282828]', 'text-white');
+                    developerSection.classList.remove('hidden');
+                }
+            };
+
+            // Live Preview - Songs
+            function updatePreview() {
+                const title = songTitle.value.trim();
+                const artist = artistName.value.trim();
+                const cover = coverImage.value.trim();
+                const dur = duration.value.trim();
+
+                if (title || artist || cover) {
+                    previewSection.classList.remove('hidden');
+                    previewTitle.textContent = title || 'Song Title';
+                    previewArtist.textContent = artist || 'Artist Name';
+                    previewDuration.textContent = dur || '0:00';
+                    if (cover) {
+                        previewImage.src = cover;
+                        previewImage.onerror = () => previewImage.src = 'https://via.placeholder.com/100?text=Error';
+                    }
+                } else {
+                    previewSection.classList.add('hidden');
+                }
+            }
+
+            songTitle.addEventListener('input', updatePreview);
+            artistName.addEventListener('input', updatePreview);
+            coverImage.addEventListener('input', updatePreview);
+            duration.addEventListener('input', updatePreview);
+
+            // Live Preview - Categories
+            function updateCategoryPreview() {
+                const title = categoryTitle.value.trim();
+                const logo = categoryLogo.value.trim();
+
+                if (title || logo) {
+                    categoryPreviewSection.classList.remove('hidden');
+                    categoryPreviewTitle.textContent = title || 'Category Name';
+                    if (logo) {
+                        categoryPreviewImage.src = logo;
+                        categoryPreviewImage.onerror = () => categoryPreviewImage.src = 'https://via.placeholder.com/100?text=Error';
+                    }
+                } else {
+                    categoryPreviewSection.classList.add('hidden');
+                }
+            }
+
+            categoryTitle.addEventListener('input', updateCategoryPreview);
+            categoryLogo.addEventListener('input', updateCategoryPreview);
+
+            // Live Preview - Developer
+            function updateDevPreview() {
+                const avatar = devAvatar.value.trim();
+                const name = devName.value.trim();
+                const title = devTitle.value.trim();
+                const bio = devBio.value.trim();
+                const github = devGithub.value.trim();
+                const telegram = devTelegram.value.trim();
+                const whatsapp = devWhatsapp.value.trim();
+                const youtube = devYoutube.value.trim();
+
+                if (avatar || name || title || bio) {
+                    devPreviewSection.classList.remove('hidden');
+                    document.getElementById('devPreviewName').textContent = name || 'Developer Name';
+                    document.getElementById('devPreviewTitle').textContent = title || 'Title / Role';
+                    document.getElementById('devPreviewBio').textContent = bio || 'Bio will appear here...';
+                    
+                    if (avatar) {
+                        document.getElementById('devPreviewAvatar').src = avatar;
+                        document.getElementById('devPreviewAvatar').onerror = () => 
+                            document.getElementById('devPreviewAvatar').src = 'https://via.placeholder.com/100?text=Error';
+                    }
+                    
+                    document.getElementById('previewGithub').classList.toggle('hidden', !github);
+                    document.getElementById('previewTelegram').classList.toggle('hidden', !telegram);
+                    document.getElementById('previewWhatsapp').classList.toggle('hidden', !whatsapp);
+                    document.getElementById('previewYoutube').classList.toggle('hidden', !youtube);
+                } else {
+                    devPreviewSection.classList.add('hidden');
+                }
+            }
+
+            devAvatar.addEventListener('input', updateDevPreview);
+            devName.addEventListener('input', updateDevPreview);
+            devTitle.addEventListener('input', updateDevPreview);
+            devBio.addEventListener('input', updateDevPreview);
+            devGithub.addEventListener('input', updateDevPreview);
+            devTelegram.addEventListener('input', updateDevPreview);
+            devWhatsapp.addEventListener('input', updateDevPreview);
+            devYoutube.addEventListener('input', updateDevPreview);
+
+            // Show Toast
+            function showToast(message, isError = false) {
+                toastMessage.textContent = message;
+                toast.querySelector('.toast').className = `toast ${isError ? 'bg-red-500' : 'bg-[#1DB954]'} text-${isError ? 'white' : 'black'} px-4 py-3 rounded-lg font-medium text-sm flex items-center gap-2 shadow-lg`;
+                toast.classList.remove('hidden');
+                setTimeout(() => toast.classList.add('hidden'), 3000);
+            }
+
+            // Populate category dropdowns
+            function populateCategoryDropdowns() {
+                const options = Object.entries(categoriesData).map(([id, cat]) => 
+                    `<option value="${id}">${cat.title}</option>`
+                ).join('');
+                
+                songCategory.innerHTML = '<option value="">Select Category</option>' + options;
+                document.getElementById('editCategory').innerHTML = '<option value="">Select Category</option>' + options;
+            }
+
+            // Add Category
+            categoryForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                categorySubmitBtn.disabled = true;
+                categorySubmitBtn.innerHTML = '<div class="loading-spinner"></div>';
+
+                const catData = {
+                    title: categoryTitle.value.trim(),
+                    logo: categoryLogo.value.trim(),
+                    createdAt: Date.now()
+                };
+
+                try {
+                    const newCatRef = push(categoriesRef);
+                    await set(newCatRef, catData);
+                    
+                    categoryForm.reset();
+                    categoryPreviewSection.classList.add('hidden');
+                    showToast('Category created successfully!');
+                } catch (error) {
+                    console.error('Error adding category:', error);
+                    showToast('Failed to create category. Please try again.', true);
+                } finally {
+                    categorySubmitBtn.disabled = false;
+                    categorySubmitBtn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg> Create Category`;
+                }
+            });
+
+            // Add Song
+            songForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<div class="loading-spinner"></div>';
+
+                const songData = {
+                    categoryId: songCategory.value,
+                    title: songTitle.value.trim(),
+                    artist: artistName.value.trim(),
+                    cover: coverImage.value.trim(),
+                    url: songUrl.value.trim(),
+                    duration: duration.value.trim(),
+                    createdAt: Date.now()
+                };
+
+                try {
+                    const newSongRef = push(musicRef);
+                    await set(newSongRef, songData);
+                    
+                    songForm.reset();
+                    previewSection.classList.add('hidden');
+                    showToast('Song uploaded successfully!');
+                } catch (error) {
+                    console.error('Error adding song:', error);
+                    showToast('Failed to upload song. Please try again.', true);
+                } finally {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 16h6v-6h4l-7-7-7 7h4v6zm-4 2h14v2H5v-2z"/>
+                    </svg> Upload Song`;
+                }
+            });
+
+            // Save Developer Profile
+            developerForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                devSubmitBtn.disabled = true;
+                devSubmitBtn.innerHTML = '<div class="loading-spinner"></div>';
+
+                const devData = {
+                    avatar: devAvatar.value.trim(),
+                    name: devName.value.trim(),
+                    title: devTitle.value.trim(),
+                    bio: devBio.value.trim(),
+                    social: {
+                        github: devGithub.value.trim(),
+                        telegram: devTelegram.value.trim(),
+                        whatsapp: devWhatsapp.value.trim(),
+                        youtube: devYoutube.value.trim()
+                    },
+                    updatedAt: Date.now()
+                };
+
+                try {
+                    await set(developerRef, devData);
+                    showToast('Developer profile saved successfully!');
+                } catch (error) {
+                    console.error('Error saving developer profile:', error);
+                    showToast('Failed to save profile. Please try again.', true);
+                } finally {
+                    devSubmitBtn.disabled = false;
+                    devSubmitBtn.innerHTML = `<svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z"/>
+                    </svg> Save Developer Profile`;
+                }
+            });
+
+            // Fetch Developer Profile
+            onValue(developerRef, (snapshot) => {
+                const data = snapshot.val();
+                
+                if (data) {
+                    devAvatar.value = data.avatar || '';
+                    devName.value = data.name || '';
+                    devTitle.value = data.title || '';
+                    devBio.value = data.bio || '';
+                    devGithub.value = data.social?.github || '';
+                    devTelegram.value = data.social?.telegram || '';
+                    devWhatsapp.value = data.social?.whatsapp || '';
+                    devYoutube.value = data.social?.youtube || '';
+                    
+                    updateDevPreview();
+                    
+                    document.getElementById('currentDevInfo').classList.remove('hidden');
+                    document.getElementById('devProfileCard').innerHTML = `
+                        <div class="flex flex-col items-center text-center">
+                            <div class="dev-avatar-ring mb-4">
+                                <img src="${data.avatar}" class="w-20 h-20 rounded-full object-cover bg-gray-700" onerror="this.src='https://via.placeholder.com/100?text=Dev'">
+                            </div>
+                            <h3 class="text-lg font-bold text-white mb-1">${data.name}</h3>
+                            <p class="text-[#1DB954] text-sm font-medium mb-2">${data.title}</p>
+                            <p class="text-gray-400 text-xs leading-relaxed mb-4">${data.bio}</p>
+                            <div class="flex gap-2">
+                                ${data.social?.github ? `<a href="${data.social.github}" target="_blank" class="social-btn github w-9 h-9 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg></a>` : ''}
+                                ${data.social?.telegram ? `<a href="${data.social.telegram}" target="_blank" class="social-btn telegram w-9 h-9 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M11.944 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0a12 12 0 0 0-.056 0zm4.962 7.224c.1-.002.321.023.465.14a.506.506 0 0 1 .171.325c.016.093.036.306.02.472-.18 1.898-.962 6.502-1.36 8.627-.168.9-.499 1.201-.82 1.23-.696.065-1.225-.46-1.9-.902-1.056-.693-1.653-1.124-2.678-1.8-1.185-.78-.417-1.21.258-1.91.177-.184 3.247-2.977 3.307-3.23.007-.032.014-.15-.056-.212s-.174-.041-.249-.024c-.106.024-1.793 1.14-5.061 3.345-.48.33-.913.49-1.302.48-.428-.008-1.252-.241-1.865-.44-.752-.245-1.349-.374-1.297-.789.027-.216.325-.437.893-.663 3.498-1.524 5.83-2.529 6.998-3.014 3.332-1.386 4.025-1.627 4.476-1.635z"/></svg></a>` : ''}
+                                ${data.social?.whatsapp ? `<a href="${data.social.whatsapp}" target="_blank" class="social-btn whatsapp w-9 h-9 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a>` : ''}
+                                ${data.social?.youtube ? `<a href="${data.social.youtube}" target="_blank" class="social-btn youtube w-9 h-9 rounded-full flex items-center justify-center"><svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            // Fetch and Display Categories
+            onValue(categoriesRef, (snapshot) => {
+                categoryLoadingState.classList.add('hidden');
+                categoriesContainer.innerHTML = '';
+
+                const data = snapshot.val();
+                categoriesData = data || {};
+                
+                populateCategoryDropdowns();
+                
+                if (!data) {
+                    categoryEmptyState.classList.remove('hidden');
+                    categoryCount.textContent = '0 categories';
+                    return;
+                }
+
+                categoryEmptyState.classList.add('hidden');
+                const categories = Object.entries(data).reverse();
+                categoryCount.textContent = `${categories.length} categor${categories.length !== 1 ? 'ies' : 'y'}`;
+
+                categories.forEach(([id, category]) => {
+                    const catCard = document.createElement('div');
+                    catCard.className = 'category-card p-4 rounded-xl flex items-center gap-3';
+                    catCard.innerHTML = `
+                        <img src="${category.logo}" alt="${category.title}" 
+                            class="w-14 h-14 rounded-full object-cover bg-gray-700"
+                            onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-medium truncate">${category.title}</p>
+                            <p class="text-gray-400 text-xs">Category</p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="openEditCategoryModal('${id}', '${escapeHtml(category.title)}', '${escapeHtml(category.logo)}')" 
+                                class="btn-icon p-2 rounded-full">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button onclick="openDeleteModal('${id}', 'category')" 
+                                class="btn-icon p-2 rounded-full">
+                                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    categoriesContainer.appendChild(catCard);
+                });
+            });
+
+            // Fetch and Display Songs
+            onValue(musicRef, (snapshot) => {
+                loadingState.classList.add('hidden');
+                songsContainer.innerHTML = '';
+
+                const data = snapshot.val();
+                
+                if (!data) {
+                    emptyState.classList.remove('hidden');
+                    songCount.textContent = '0 songs';
+                    return;
+                }
+
+                emptyState.classList.add('hidden');
+                const songs = Object.entries(data).reverse();
+                songCount.textContent = `${songs.length} song${songs.length !== 1 ? 's' : ''}`;
+
+                songs.forEach(([id, song]) => {
+                    const categoryName = categoriesData[song.categoryId]?.title || 'Uncategorized';
+                    const songCard = document.createElement('div');
+                    songCard.className = 'song-card p-4 rounded-xl flex items-center gap-3';
+                    songCard.innerHTML = `
+                        <img src="${song.cover}" alt="${song.title}" 
+                            class="w-14 h-14 rounded object-cover bg-gray-700"
+                            onerror="this.src='https://via.placeholder.com/100?text=No+Image'">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-medium truncate text-sm">${song.title}</p>
+                            <p class="text-gray-400 text-xs truncate">${song.artist}</p>
+                            <p class="text-gray-500 text-xs mt-1">${song.duration} • ${categoryName}</p>
+                        </div>
+                        <div class="flex items-center gap-1">
+                            <button onclick="openEditModal('${id}', '${song.categoryId || ''}', '${escapeHtml(song.title)}', '${escapeHtml(song.artist)}', '${escapeHtml(song.cover)}', '${escapeHtml(song.url)}', '${song.duration}')" 
+                                class="btn-icon p-2 rounded-full">
+                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                                </svg>
+                            </button>
+                            <button onclick="openDeleteModal('${id}', 'song')" 
+                                class="btn-icon p-2 rounded-full">
+                                <svg class="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                </svg>
+                            </button>
+                        </div>
+                    `;
+                    songsContainer.appendChild(songCard);
+                });
+            });
+
+            // Helper function to escape HTML
+            function escapeHtml(text) {
+                if (!text) return '';
+                return text.replace(/'/g, "\\'").replace(/"/g, '\\"');
+            }
+
+            // Edit Song Modal Functions
+            window.openEditModal = function(id, categoryId, title, artist, cover, url, dur) {
+                document.getElementById('editSongId').value = id;
+                document.getElementById('editCategory').value = categoryId;
+                document.getElementById('editTitle').value = title.replace(/\\'/g, "'").replace(/\\"/g, '"');
+                document.getElementById('editArtist').value = artist.replace(/\\'/g, "'").replace(/\\"/g, '"');
+                document.getElementById('editCover').value = cover.replace(/\\'/g, "'").replace(/\\"/g, '"');
+                document.getElementById('editUrl').value = url.replace(/\\'/g, "'").replace(/\\"/g, '"');
+                document.getElementById('editDuration').value = dur;
+                document.getElementById('editModal').classList.remove('hidden');
+            };
+
+            window.closeEditModal = function() {
+                document.getElementById('editModal').classList.add('hidden');
+            };
+
+            // Edit Category Modal Functions
+            window.openEditCategoryModal = function(id, title, logo) {
+                document.getElementById('editCategoryId').value = id;
+                document.getElementById('editCategoryTitle').value = title.replace(/\\'/g, "'").replace(/\\"/g, '"');
+                document.getElementById('editCategoryLogo').value = logo.replace(/\\'/g, "'").replace(/\\"/g, '"');
+                document.getElementById('editCategoryModal').classList.remove('hidden');
+            };
+
+            window.closeEditCategoryModal = function() {
+                document.getElementById('editCategoryModal').classList.add('hidden');
+            };
+
+            // Edit Song Form Submit
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const id = document.getElementById('editSongId').value;
+                const updates = {
+                    categoryId: document.getElementById('editCategory').value,
+                    title: document.getElementById('editTitle').value.trim(),
+                    artist: document.getElementById('editArtist').value.trim(),
+                    cover: document.getElementById('editCover').value.trim(),
+                    url: document.getElementById('editUrl').value.trim(),
+                    duration: document.getElementById('editDuration').value.trim()
+                };
+
+                try {
+                    await update(ref(database, `music/${id}`), updates);
+                    closeEditModal();
+                    showToast('Song updated successfully!');
+                } catch (error) {
+                    console.error('Error updating song:', error);
+                    showToast('Failed to update song', true);
+                }
+            });
+
+            // Edit Category Form Submit
+            document.getElementById('editCategoryForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                const id = document.getElementById('editCategoryId').value;
+                const updates = {
+                    title: document.getElementById('editCategoryTitle').value.trim(),
+                    logo: document.getElementById('editCategoryLogo').value.trim()
+                };
+
+                try {
+                    await update(ref(database, `categories/${id}`), updates);
+                    closeEditCategoryModal();
+                    showToast('Category updated successfully!');
+                } catch (error) {
+                    console.error('Error updating category:', error);
+                    showToast('Failed to update category', true);
+                }
+            });
+
+            // Delete Modal Functions
+            window.openDeleteModal = function(id, type) {
+                document.getElementById('deleteItemId').value = id;
+                document.getElementById('deleteItemType').value = type;
+                document.getElementById('deleteModalTitle').textContent = type === 'song' ? 'Delete Song?' : 'Delete Category?';
+                document.getElementById('deleteModal').classList.remove('hidden');
+            };
+
+            window.closeDeleteModal = function() {
+                document.getElementById('deleteModal').classList.add('hidden');
+            };
+
+            window.confirmDelete = async function() {
+                const id = document.getElementById('deleteItemId').value;
+                const type = document.getElementById('deleteItemType').value;
+                const path = type === 'song' ? 'music' : 'categories';
+                
+                try {
+                    await remove(ref(database, `${path}/${id}`));
+                    closeDeleteModal();
+                    showToast(`${type === 'song' ? 'Song' : 'Category'} deleted successfully!`);
+                } catch (error) {
+                    console.error('Error deleting:', error);
+                    showToast(`Failed to delete ${type}`, true);
+                }
+            };
+        }
+    </script>
+</body>
+</html>

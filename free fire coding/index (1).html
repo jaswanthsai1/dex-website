@@ -1,0 +1,780 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YouTube Free Watch Time</title>
+    <style>
+        /* Global Styles */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        /* App Name Animation */
+        .app-name {
+            text-align: center;
+            margin-bottom: 30px;
+            animation: fadeInDown 1s ease;
+        }
+        
+        .app-name h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            display: inline-block;
+            position: relative;
+        }
+        
+        .app-name h1::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(90deg, #ff8a00, #e52e71);
+            border-radius: 3px;
+            animation: pulse 2s infinite;
+        }
+        
+        /* Disclaimer Screen */
+        .disclaimer-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .disclaimer-content {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            animation: scaleIn 0.5s ease;
+        }
+        
+        .disclaimer-text {
+            font-size: 1.2rem;
+            line-height: 1.6;
+            margin-bottom: 30px;
+        }
+        
+        .vpn-button {
+            display: inline-block;
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+            transition: all 0.3s ease;
+        }
+        
+        .vpn-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.6);
+        }
+        
+        .cancel-button {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 0, 0, 0.7);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 50px;
+            font-size: 1rem;
+            cursor: not-allowed;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        
+        .cancel-button.enabled {
+            cursor: pointer;
+            opacity: 1;
+            background: rgba(255, 0, 0, 0.9);
+        }
+        
+        .cancel-button.enabled:hover {
+            background: rgba(255, 0, 0, 1);
+            transform: scale(1.05);
+        }
+        
+        /* Input Section */
+        .input-section {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeInUp 0.8s ease;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+        }
+        
+        .input-label {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+        
+        .url-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .url-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+        
+        .number-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .number-btn {
+            flex: 1;
+            min-width: 60px;
+            padding: 12px 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .number-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .number-btn.active {
+            background: rgba(255, 255, 255, 0.3);
+            border-color: #e52e71;
+            box-shadow: 0 0 10px rgba(229, 46, 113, 0.5);
+        }
+        
+        .custom-input {
+            width: 100%;
+            padding: 15px;
+            border-radius: 10px;
+            border: none;
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .custom-input:focus {
+            outline: none;
+            background: rgba(255, 255, 255, 0.25);
+            box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.3);
+        }
+        
+        .load-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(90deg, #e52e71, #ff8a00);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .load-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(229, 46, 113, 0.4);
+        }
+        
+        /* Players Grid */
+        .players-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .player-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 0.5s ease;
+            transition: all 0.3s ease;
+        }
+        
+        .player-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+        }
+        
+        .player-wrapper {
+            position: relative;
+            width: 100%;
+            height: 0;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+        }
+        
+        .player-iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        /* Controls */
+        .controls {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 15px;
+            z-index: 100;
+        }
+        
+        .control-btn {
+            padding: 12px 25px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .control-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+        
+        .play-btn {
+            background: linear-gradient(90deg, #4CAF50, #45a049);
+        }
+        
+        .pause-btn {
+            background: linear-gradient(90deg, #ff9800, #f57c00);
+        }
+        
+        /* Plus Button */
+        .plus-button {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #e52e71, #ff8a00);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(229, 46, 113, 0.4);
+            transition: all 0.3s ease;
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .plus-button:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 8px 25px rgba(229, 46, 113, 0.6);
+        }
+        
+        /* Timer Display */
+        .timer-display {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            display: none;
+        }
+        
+        /* Error Message */
+        .error-message {
+            background: rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 0, 0, 0.5);
+            color: #ff6b6b;
+            padding: 10px 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+        }
+        
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .players-grid {
+                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            }
+            
+            .app-name h1 {
+                font-size: 1.8rem;
+            }
+            
+            .controls {
+                flex-direction: column;
+                width: 90%;
+                bottom: 10px;
+            }
+            
+            .plus-button {
+                bottom: 150px;
+                right: 15px;
+                width: 50px;
+                height: 50px;
+                font-size: 1.5rem;
+            }
+            
+            .disclaimer-content {
+                padding: 20px;
+            }
+            
+            .disclaimer-text {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- App Name with Animation -->
+        <div class="app-name">
+            <h1>YouTube Free Watch Time</h1>
+        </div>
+        
+        <!-- Disclaimer Screen -->
+        <div class="disclaimer-screen" id="disclaimerScreen">
+            <div class="disclaimer-content">
+                <div class="disclaimer-text">
+                    <p>⚠️ Disclaimer: This app is for educational purposes only.</p>
+                    <p>Using multiple instances to artificially inflate watch time may violate YouTube's Terms of Service.</p>
+                    <p>Use at your own risk! 🚨</p>
+                </div>
+                <a href="https://play.google.com/store/apps/details?id=com.browsec.vpn" class="vpn-button" target="_blank">
+                    Connect VPN 🔒
+                </a>
+                <button class="cancel-button" id="cancelButton" disabled>Cancel ❌</button>
+            </div>
+        </div>
+        
+        <!-- Input Section -->
+        <div class="input-section" id="inputSection" style="display: none;">
+            <div class="input-group">
+                <label class="input-label">Paste your YouTube link 🎥</label>
+                <input type="text" class="url-input" id="youtubeUrl" placeholder="https://www.youtube.com/watch?v=..." />
+                <div class="error-message" id="errorMessage"></div>
+            </div>
+            
+            <div class="input-group">
+                <label class="input-label">Select number of players</label>
+                <div class="number-buttons" id="numberButtons">
+                    <button class="number-btn" data-count="5">5</button>
+                    <button class="number-btn" data-count="10">10</button>
+                    <button class="number-btn" data-count="15">15</button>
+                    <button class="number-btn" data-count="20">20</button>
+                    <button class="number-btn" data-count="25">25</button>
+                    <button class="number-btn" data-count="30">30</button>
+                    <button class="number-btn" data-count="35">35</button>
+                    <button class="number-btn" data-count="40">40</button>
+                </div>
+                <input type="number" class="custom-input" id="customNumber" placeholder="Or enter custom number" min="1" max="100" />
+            </div>
+            
+            <button class="load-button" id="loadButton">Load Players 🚀</button>
+        </div>
+        
+        <!-- Players Grid -->
+        <div class="players-grid" id="playersGrid"></div>
+        
+        <!-- Controls -->
+        <div class="controls" id="controls" style="display: none;">
+            <button class="control-btn play-btn" id="playAllButton">Play All ▶️</button>
+            <button class="control-btn pause-btn" id="pauseAllButton">Pause All ⏸️</button>
+        </div>
+        
+        <!-- Plus Button -->
+        <button class="plus-button" id="plusButton" style="display: none;">➕</button>
+        
+        <!-- Timer Display -->
+        <div class="timer-display" id="timerDisplay">Next pause in: 60s</div>
+    </div>
+
+    <script>
+        // Global variables
+        let players = [];
+        let playerCount = 0;
+        let currentVideoId = '';
+        let autoPauseTimer = null;
+        let autoResumeTimer = null;
+        let timeUntilPause = 60;
+        
+        // Wait for the YouTube IFrame API to load
+        let tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        let firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        
+        // Enable cancel button after 5 seconds
+        setTimeout(() => {
+            document.getElementById('cancelButton').disabled = false;
+            document.getElementById('cancelButton').classList.add('enabled');
+        }, 5000);
+        
+        // Event Listeners
+        document.getElementById('cancelButton').addEventListener('click', closeDisclaimer);
+        document.getElementById('loadButton').addEventListener('click', loadPlayers);
+        document.getElementById('playAllButton').addEventListener('click', playAllVideos);
+        document.getElementById('pauseAllButton').addEventListener('click', pauseAllVideos);
+        document.getElementById('plusButton').addEventListener('click', addPlayer);
+        
+        // Number buttons event listeners
+        const numberButtons = document.querySelectorAll('.number-btn');
+        numberButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Remove active class from all buttons
+                numberButtons.forEach(btn => btn.classList.remove('active'));
+                // Add active class to clicked button
+                this.classList.add('active');
+                // Set the custom input value
+                document.getElementById('customNumber').value = this.getAttribute('data-count');
+            });
+        });
+        
+        // Custom number input event listener
+        document.getElementById('customNumber').addEventListener('input', function() {
+            // Remove active class from all buttons when custom input is used
+            numberButtons.forEach(btn => btn.classList.remove('active'));
+        });
+        
+        // Functions
+        function closeDisclaimer() {
+            document.getElementById('disclaimerScreen').style.display = 'none';
+            document.getElementById('inputSection').style.display = 'block';
+        }
+        
+        function extractVideoId(url) {
+            // Improved video ID extraction for all YouTube URL formats
+            if (!url) return null;
+            
+            // Remove any extra spaces
+            url = url.trim();
+            
+            // Check for standard YouTube URL formats
+            const patterns = [
+                /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([^&?#]+)/,
+                /youtube\.com\/watch\?.*v=([^&?#]+)/,
+                /youtu\.be\/([^&?#]+)/,
+                /youtube\.com\/embed\/([^&?#]+)/
+            ];
+            
+            for (const pattern of patterns) {
+                const match = url.match(pattern);
+                if (match && match[1]) {
+                    return match[1];
+                }
+            }
+            
+            // Check for YouTube Shorts URL
+            const shortsPattern = /youtube\.com\/shorts\/([^&?#]+)/;
+            const shortsMatch = url.match(shortsPattern);
+            if (shortsMatch && shortsMatch[1]) {
+                return shortsMatch[1];
+            }
+            
+            // If no pattern matches, try to extract any 11-character string that looks like a video ID
+            const idPattern = /[0-9A-Za-z_-]{11}/;
+            const idMatch = url.match(idPattern);
+            if (idMatch) {
+                return idMatch[0];
+            }
+            
+            return null;
+        }
+        
+        function loadPlayers() {
+            const url = document.getElementById('youtubeUrl').value.trim();
+            const videoId = extractVideoId(url);
+            
+            // Hide any previous error message
+            document.getElementById('errorMessage').style.display = 'none';
+            
+            if (!videoId) {
+                document.getElementById('errorMessage').textContent = 'Please enter a valid YouTube URL! Examples:\n- https://www.youtube.com/watch?v=VIDEO_ID\n- https://youtu.be/VIDEO_ID\n- https://www.youtube.com/embed/VIDEO_ID';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
+            currentVideoId = videoId;
+            
+            // Get player count
+            let count = parseInt(document.getElementById('customNumber').value);
+            if (isNaN(count) || count < 1) {
+                document.getElementById('errorMessage').textContent = 'Please select a valid number of players!';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
+            playerCount = count;
+            
+            // Clear existing players
+            document.getElementById('playersGrid').innerHTML = '';
+            players = [];
+            
+            // Create players
+            for (let i = 0; i < playerCount; i++) {
+                createPlayer(i);
+            }
+            
+            // Show controls and plus button
+            document.getElementById('controls').style.display = 'flex';
+            document.getElementById('plusButton').style.display = 'flex';
+            
+            // Reset auto pause timer
+            resetAutoPauseTimer();
+        }
+        
+        function createPlayer(index) {
+            const playerGrid = document.getElementById('playersGrid');
+            
+            // Create player card
+            const playerCard = document.createElement('div');
+            playerCard.className = 'player-card';
+            playerCard.id = `player-card-${index}`;
+            
+            // Create player wrapper
+            const playerWrapper = document.createElement('div');
+            playerWrapper.className = 'player-wrapper';
+            
+            // Create iframe
+            const iframe = document.createElement('div');
+            iframe.id = `player-${index}`;
+            iframe.className = 'player-iframe';
+            
+            playerWrapper.appendChild(iframe);
+            playerCard.appendChild(playerWrapper);
+            playerGrid.appendChild(playerCard);
+            
+            // Create YouTube player
+            const player = new YT.Player(`player-${index}`, {
+                height: '100%',
+                width: '100%',
+                videoId: currentVideoId,
+                playerVars: {
+                    'enablejsapi': 1,
+                    'autoplay': 0,
+                    'controls': 1,
+                    'rel': 0,
+                    'modestbranding': 1
+                },
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
+                }
+            });
+            
+            players.push(player);
+        }
+        
+        function onPlayerReady(event) {
+            // Player is ready, but we don't autoplay
+        }
+        
+        function onPlayerStateChange(event) {
+            // Handle player state changes if needed
+        }
+        
+        function playAllVideos() {
+            players.forEach(player => {
+                if (player && typeof player.playVideo === 'function') {
+                    player.playVideo();
+                }
+            });
+            
+            // Reset auto pause timer
+            resetAutoPauseTimer();
+        }
+        
+        function pauseAllVideos() {
+            players.forEach(player => {
+                if (player && typeof player.pauseVideo === 'function') {
+                    player.pauseVideo();
+                }
+            });
+            
+            // Clear auto pause timer
+            clearTimeout(autoPauseTimer);
+            clearTimeout(autoResumeTimer);
+            document.getElementById('timerDisplay').style.display = 'none';
+        }
+        
+        function addPlayer() {
+            if (!currentVideoId) {
+                document.getElementById('errorMessage').textContent = 'Please load players first!';
+                document.getElementById('errorMessage').style.display = 'block';
+                return;
+            }
+            
+            const index = players.length;
+            createPlayer(index);
+            
+            // Update player count
+            playerCount++;
+            document.getElementById('customNumber').value = playerCount;
+        }
+        
+        function resetAutoPauseTimer() {
+            // Clear existing timers
+            clearTimeout(autoPauseTimer);
+            clearTimeout(autoResumeTimer);
+            
+            // Show timer display
+            document.getElementById('timerDisplay').style.display = 'block';
+            timeUntilPause = 60;
+            updateTimerDisplay();
+            
+            // Set auto pause timer
+            autoPauseTimer = setTimeout(() => {
+                pauseAllVideos();
+                
+                // Set auto resume timer
+                autoResumeTimer = setTimeout(() => {
+                    playAllVideos();
+                }, 3000);
+                
+            }, 60000);
+            
+            // Update timer display every second
+            const timerInterval = setInterval(() => {
+                timeUntilPause--;
+                updateTimerDisplay();
+                
+                if (timeUntilPause <= 0) {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+        
+        function updateTimerDisplay() {
+            document.getElementById('timerDisplay').textContent = `Next pause in: ${timeUntilPause}s`;
+        }
+        
+        // YouTube IFrame API callback
+        function onYouTubeIframeAPIReady() {
+            // This function is called when the YouTube IFrame API is ready
+            // Players are created when the user clicks the load button
+        }
+    </script>
+</body>
+</html>

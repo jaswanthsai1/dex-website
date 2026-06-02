@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Earning App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body { font-family: sans-serif; margin: 0; background: #f4f7f6; }
+        .sidebar { width: 250px; background: #2c3e50; height: 100vh; position: fixed; color: white; padding-top: 20px; }
+        .sidebar h2 { text-align: center; margin-bottom: 40px; }
+        .sidebar a { display: block; color: #b8c7ce; padding: 15px 25px; text-decoration: none; border-left: 4px solid transparent; }
+        .sidebar a:hover, .sidebar a.active { background: #1a252f; border-left-color: #3498db; color: white; }
+        .content { margin-left: 250px; padding: 20px; }
+        
+        .card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+        .stat-box { background: #3498db; color: white; padding: 20px; border-radius: 8px; text-align: center; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background: #f8f9fa; }
+        
+        button { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; color: white; }
+        .btn-approve { background: #2ecc71; }
+        .btn-reject { background: #e74c3c; }
+        .btn-add { background: #3498db; padding: 10px 20px; }
+        
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-right: 10px; }
+        
+        .login-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:#2c3e50; display:flex; justify-content:center; align-items:center; z-index:999; }
+        .login-box { background: white; padding: 40px; border-radius: 8px; text-align: center; }
+    </style>
+</head>
+<body>
+
+    <!-- Admin Login -->
+    <div id="admin-login" class="login-screen">
+        <div class="login-box">
+            <h2>Admin Login</h2>
+            <input type="email" id="admin-email" placeholder="Admin Email"><br><br>
+            <input type="password" id="admin-pass" placeholder="Password"><br><br>
+            <button class="btn-add" onclick="adminLogin()">Login</button>
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <h2>App Admin</h2>
+        <a href="#" onclick="showSection('dashboard')" class="active">Dashboard</a>
+        <a href="#" onclick="showSection('redeem')">Redeem Requests</a>
+        <a href="#" onclick="showSection('users')">Users</a>
+        <a href="#" onclick="showSection('coupons')">Coupons</a>
+        <a href="#" onclick="logout()">Logout</a>
+    </div>
+
+    <div class="content" id="main-content" style="display:none;">
+        
+        <!-- DASHBOARD -->
+        <div id="dashboard" class="section">
+            <h1>Dashboard</h1>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <h3>Total Users</h3>
+                    <h1 id="total-users">0</h1>
+                </div>
+                <div class="stat-box" style="background:#e67e22;">
+                    <h3>Total Coins</h3>
+                    <h1 id="total-coins">0</h1>
+                </div>
+                <div class="stat-box" style="background:#27ae60;">
+                    <h3>Pending Redeems</h3>
+                    <h1 id="pending-redeems">0</h1>
+                </div>
+            </div>
+        </div>
+
+        <!-- REDEEM REQUESTS -->
+        <div id="redeem" class="section" style="display:none;">
+            <h1>Redeem Requests</h1>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Amount</th>
+                            <th>Details</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="redeem-table">
+                        <!-- Loaded dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- USERS -->
+        <div id="users" class="section" style="display:none;">
+            <h1>All Users</h1>
+            <div class="card">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Balance</th>
+                            <th>Ref Code</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- COUPONS -->
+        <div id="coupons" class="section" style="display:none;">
+            <h1>Coupon Management</h1>
+            <div class="card">
+                <input type="text" id="new-coupon-code" placeholder="Code (4 Letters)" maxlength="4" style="text-transform:uppercase;">
+                <input type="number" id="new-coupon-value" placeholder="Coin Value">
+                <button class="btn-add" onclick="addCoupon()">Add Coupon</button>
+                
+                <table style="margin-top:20px;">
+                    <thead><tr><th>Code</th><th>Value</th><th>Action</th></tr></thead>
+                    <tbody id="coupon-table"></tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCRZadRoz1TwKZBMe4vk2CYzCHAH-082Nk",
+            authDomain: "java-code-lab-store-65a3e.firebaseapp.com",
+            databaseURL: "https://java-code-lab-store-65a3e-default-rtdb.firebaseio.com",
+            projectId: "java-code-lab-store-65a3e",
+            storageBucket: "java-code-lab-store-65a3e.firebasestorage.app",
+            messagingSenderId: "977376912738",
+            appId: "1:977376912738:web:8bb21c098f581027be383b"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.database();
+
+        function adminLogin() {
+            const email = document.getElementById('admin-email').value;
+            const pass = document.getElementById('admin-pass').value;
+            auth.signInWithEmailAndPassword(email, pass)
+                .then(() => {
+                    document.getElementById('admin-login').style.display = 'none';
+                    document.getElementById('main-content').style.display = 'block';
+                    loadDashboard();
+                })
+                .catch(e => alert(e.message));
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(d => d.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            document.querySelectorAll('.sidebar a').forEach(a => a.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function loadDashboard() {
+            // Stats
+            db.ref('users').on('value', snap => {
+                const users = snap.val();
+                let count = 0;
+                let coins = 0;
+                let userHtml = '';
+                if(users) {
+                    Object.keys(users).forEach(k => {
+                        count++;
+                        coins += (users[k].balance || 0);
+                        userHtml += `<tr>
+                            <td>${users[k].name}</td>
+                            <td>${users[k].email}</td>
+                            <td>${users[k].balance}</td>
+                            <td>${users[k].referralCode}</td>
+                        </tr>`;
+                    });
+                }
+                document.getElementById('total-users').innerText = count;
+                document.getElementById('total-coins').innerText = coins;
+                document.getElementById('user-table').innerHTML = userHtml;
+            });
+
+            // Redeems
+            db.ref('redeems').on('value', snap => {
+                const list = document.getElementById('redeem-table');
+                list.innerHTML = '';
+                let pendingCount = 0;
+                
+                snap.forEach(child => {
+                    const r = child.val();
+                    const key = child.key;
+                    if(r.status === 'pending') pendingCount++;
+                    
+                    list.innerHTML += `
+                        <tr>
+                            <td>${r.name}</td>
+                            <td>${r.money}₹ (${r.amount})</td>
+                            <td>${r.method}<br><small>${r.details}</small></td>
+                            <td style="color:${r.status === 'pending' ? 'orange' : r.status === 'approved' ? 'green' : 'red'}">${r.status.toUpperCase()}</td>
+                            <td>
+                                ${r.status === 'pending' ? `
+                                <button class="btn-approve" onclick="updateStatus('${key}', 'approved')">✔</button>
+                                <button class="btn-reject" onclick="updateStatus('${key}', 'rejected')">✖</button>
+                                ` : '-'}
+                            </td>
+                        </tr>
+                    `;
+                });
+                document.getElementById('pending-redeems').innerText = pendingCount;
+            });
+
+            // Coupons
+            db.ref('coupons').on('value', snap => {
+                const list = document.getElementById('coupon-table');
+                list.innerHTML = '';
+                snap.forEach(child => {
+                    list.innerHTML += `
+                        <tr>
+                            <td>${child.key}</td>
+                            <td>${child.val().value} Coins</td>
+                            <td><button class="btn-reject" onclick="deleteCoupon('${child.key}')">Delete</button></td>
+                        </tr>
+                    `;
+                });
+            });
+        }
+
+        function updateStatus(key, status) {
+            if(confirm(`Mark as ${status}?`)) {
+                db.ref('redeems/' + key).update({ status: status });
+            }
+        }
+
+        function addCoupon() {
+            const code = document.getElementById('new-coupon-code').value.toUpperCase();
+            const val = parseInt(document.getElementById('new-coupon-value').value);
+            if(code.length === 4 && val > 0) {
+                db.ref('coupons/' + code).set({ value: val });
+                document.getElementById('new-coupon-code').value = '';
+                document.getElementById('new-coupon-value').value = '';
+            } else {
+                alert("Invalid Input");
+            }
+        }
+
+        function deleteCoupon(key) {
+            if(confirm("Delete this coupon?")) {
+                db.ref('coupons/' + key).remove();
+            }
+        }
+
+        function logout() {
+            auth.signOut().then(() => location.reload());
+        }
+    </script>
+</body>
+</html>
